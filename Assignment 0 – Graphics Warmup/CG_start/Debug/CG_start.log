@@ -1,0 +1,31 @@
+﻿  glad.c
+  SquareStarterCode.cpp
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(201): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(202): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(204): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(205): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(207): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(208): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(210): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(211): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'tx': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p1_2': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(197): warning C4101: 'py': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(197): warning C4101: 'y': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p3': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p1': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(197): warning C4101: 'x': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p4': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p2': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(197): warning C4101: 'px': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'p3_4': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(198): warning C4101: 'ty': unreferenced local variable
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(247): warning C4305: '=': truncation from 'double' to 'float'
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(258): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(275): warning C4305: 'initializing': truncation from 'double' to 'float'
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(276): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(297): warning C4305: 'initializing': truncation from 'double' to 'float'
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(298): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(497): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+e:\sourcecode\c++sourcecode\cg_start\cg_start\squarestartercode.cpp(477): warning C4101: 'event': unreferenced local variable
+  CG_start.vcxproj -> E:\SourceCode\C++SourceCode\CG_start\Debug\CG_start.exe
