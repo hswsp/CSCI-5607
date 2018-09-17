@@ -17,7 +17,7 @@
 using namespace std;
 
 //Name of image texture
-string textureName = "test.ppm";
+string textureName = "brick.ppm";//goldy.ppm
 
 //Globals to store the state of the square (position, width, and angle)
 float g_pos_x = 0.0f;
@@ -109,9 +109,9 @@ unsigned char* loadImage(int& img_w, int& img_h){
       float fi = i/(float)img_h;
       for (int j = 0; j < img_w; j++){
          float fj = j/(float)img_w;
-         img_data[i*img_w*4 + j*4] = r[i+ (img_h - 1 -j)*img_w];  //Red
-         img_data[i*img_w*4 + j*4 + 1] = g[i + (img_h - 1 - j) * img_w];  //Green
-         img_data[i*img_w*4 + j*4 + 2] = b[i + (img_h - 1 - j) * img_w];  //Blue
+         img_data[i*img_w*4 + j*4] = r[j + (img_w -1- i)*img_w];  //Red (img_h - 1 - j)
+         img_data[i*img_w*4 + j*4 + 1] = g[j + (img_w - 1 - i)* img_w];  //Green (img_h - 1 - j)
+         img_data[i*img_w*4 + j*4 + 2] = b[j + (img_w - 1 - i)* img_w];  //Blue (img_h - 1 - j)
          img_data[i*img_w*4 + j*4 + 3] = 255;  //Alpha
       }
    }
@@ -301,7 +301,7 @@ void Darken(unsigned char* img_data, int& img_w, int& img_h)
 			{
 				img_data[i*img_w * 4 + j * 4] = int(img_data[i*img_w * 4 + j * 4] / step);  //Red
 				img_data[i*img_w * 4 + j * 4 + 1] = int(img_data[i*img_w * 4 + j * 4 + 1] / step);  //Green
-				img_data[i*img_w * 4 + j * 4 + 2] = int(img_data[i*img_w * 4 + j * 4 + 2] / stepgg);  //Blue
+				img_data[i*img_w * 4 + j * 4 + 2] = int(img_data[i*img_w * 4 + j * 4 + 2] / step);  //Blue
 			}
 		}
 	}
