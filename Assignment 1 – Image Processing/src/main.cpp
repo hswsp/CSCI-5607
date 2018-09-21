@@ -288,9 +288,8 @@ int main( int argc, char* argv[] ){
 	{
 		fprintf( stderr, "Warning, you didn't tell me to output anything.  I hope that's OK.\n" );
 	}
-
+	
 	delete img;
-	system("pause");
 	return EXIT_SUCCESS;
 }
 
@@ -325,6 +324,7 @@ static void ShowUsage(void)
 {
 	fprintf(stderr, "Usage: image -input <filename> [-option [arg ...] ...] -output <filename>\n");
 	fprintf(stderr, "%s", options);
+	system("pause>nul");
 	exit(EXIT_FAILURE);
 }
 
