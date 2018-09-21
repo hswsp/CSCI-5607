@@ -290,6 +290,7 @@ int main( int argc, char* argv[] ){
 	}
 
 	delete img;
+	system("pause");
 	return EXIT_SUCCESS;
 }
 

@@ -1,9 +1,10 @@
+#include <iostream>
 #include "image.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
-
+#define _CRT_SECURE_NO_WARNINGS
 /**
  * Image
  **/
