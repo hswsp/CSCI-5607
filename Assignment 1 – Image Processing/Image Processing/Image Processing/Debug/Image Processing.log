@@ -1,9 +1,35 @@
 ﻿  image.cpp
 d:\github_repository\csci-5607\assignment 1 – image processing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(97): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(104): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(107): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(139): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(142): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(177): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(178): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(179): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(209): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(210): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(211): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(212): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(220): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(230): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(239): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(258): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(264): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(269): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(271): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(276): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(278): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(285): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(286): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(287): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
   main.cpp
 d:\github_repository\csci-5607\assignment 1 – image processing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 1 – image processing\src\main.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
   pixel.cpp
+d:\github_repository\csci-5607\assignment 1 – image processing\src\pixel.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating Code...
   Image Processing.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 1 – Image Processing\Image Processing\Debug\Image Processing.exe

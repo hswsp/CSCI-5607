@@ -16,7 +16,8 @@ Component ComponentRandom(void)
 
 Component ComponentScale(Component c, double f)
 {
-    return ComponentClamp((int) floor(c * f + 0.5));
+	float temp = c / 255.0;
+    return ComponentClamp((int)(temp*f*255)); //floor(c * f + 0.5)
 }
 
 
