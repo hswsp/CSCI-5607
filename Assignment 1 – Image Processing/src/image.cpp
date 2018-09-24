@@ -210,6 +210,9 @@ void Image::ChangeSaturation(double factor)
 			float g = p.g / 255.0;
 			float b = p.b / 255.0;
 			I[x][y] = (r + g + b) / 3.0;
+			float R = r / (3 * I[x][y]);
+			float G = g / (3 * I[x][y]);
+			float B = b / (3 * I[x][y]);
 			if ((r == g) && (g ==b))
 			{
 				S[x][y] = 0;
@@ -229,11 +232,11 @@ void Image::ChangeSaturation(double factor)
 				else if (b > g)
 					H[x][y] = 2 * pi - H[x][y];
 				if (r <= g&&r <= b)
-					S[x][y] = 1 - r/ I[x][y];
+					S[x][y] = 1 - 3*R;
 				else if(g <= r&&g <= b)
-					S[x][y] = 1 - g/ I[x][y];
+					S[x][y] = 1 - 3*G;
 				else
-					S[x][y] = 1 - b/ I[x][y];
+					S[x][y] = 1 - 3*B;
 			}
 			//change S			
 			S[x][y] = S[x][y] * factor;
@@ -382,16 +385,138 @@ void Image::FloydSteinbergDither(int nbits)
 void Image::Blur(int n)
 {
 	/* WORK HERE */
+	/*using GaussianBlur*/
+	int i, j, R, G, B;
+	const int mheight = Height();
+	const int mwidth = Width();
+	int **gaur = new int*[mheight];
+	int **gaug = new int*[mheight];
+	int **gaub = new int*[mheight];
+	int **pixelr = new int*[mheight];
+	int **pixelg = new int*[mheight];
+	int **pixelb = new int*[mheight];
+	for (i = 0; i < mheight; i++)
+	{
+		gaur[i] = new int[mwidth];
+		gaug[i] = new int[mwidth];
+		gaub[i] = new int[mwidth];
+		pixelr[i] = new int[mwidth];
+		pixelg[i] = new int[mwidth];
+		pixelb[i] = new int[mwidth];
+		for (j = 0; j < mwidth; j++)
+		{
+			Pixel p = GetPixel(i, j);
+			// keep the edge
+			gaur[i][j] = pixelr[i][j] = p.r;
+			gaug[i][j] = pixelg[i][j] = p.g;
+			gaub[i][j] = pixelb[i][j] = p.b;
+		}
+
+	}
+	// filter n times
+	for (int k = 0; k < n; ++k)
+	{
+		for (i = 1; i < mheight - 1; i++)
+		{
+			for (j = 1; j < mwidth - 1; j++)
+			{
+				R = gaur[i - 1][j - 1] + 2 * gaur[i][j - 1] + gaur[i + 1][j - 1]
+					+ 2 * gaur[i - 1][j] + 4 * gaur[i][j] + 2 * gaur[i + 1][j]
+					+ gaur[i - 1][j + 1] + 2 * gaur[i][j + 1] + gaur[i + 1][j + 1];
+				gaur[i][j] = R / 16;
+
+				G = gaug[i - 1][j - 1] + 2 * gaug[i][j - 1] + gaug[i + 1][j - 1]
+					+ 2 * gaug[i - 1][j] + 4 * gaug[i][j] + 2 * gaug[i + 1][j]
+					+ gaug[i - 1][j + 1] + 2 * gaug[i][j + 1] + gaug[i + 1][j + 1];
+				gaug[i][j] = G / 16;
+
+				B = gaub[i - 1][j - 1] + 2 * gaub[i][j - 1] + gaub[i + 1][j - 1]
+					+ 2 * gaub[i - 1][j] + 4 * gaub[i][j] + 2 * gaub[i + 1][j]
+					+ gaub[i - 1][j + 1] + 2 * gaub[i][j + 1] + gaub[i + 1][j + 1];
+				gaub[i][j] = B / 16;
+			}
+		}
+	}
+	int x, y;
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+			Pixel p = GetPixel(x, y);
+			Pixel blur_p(ComponentClamp(gaur[x][y]), ComponentClamp(gaug[x][y]),
+				ComponentClamp(gaub[x][y]), p.a);
+			GetPixel(x, y) = blur_p;
+		}
+	}
 }
 
 void Image::Sharpen(int n)
 {
 	/* WORK HERE */
+	
 }
 
 void Image::EdgeDetect()
 {
 	/* WORK HERE */
+	/*using Laplace operator*/
+	int i, j, R, G, B;
+	const int mheight = Height();
+	const int mwidth = Width();
+	int **lapr = new int*[mheight];
+	int **lapg = new int*[mheight];
+	int **lapb = new int*[mheight];
+	int **pixelr = new int*[mheight];
+	int **pixelg = new int*[mheight];
+	int **pixelb = new int*[mheight];
+	for (i = 0; i < mheight; i++)
+	{
+		lapr[i] = new int[mwidth];
+		lapg[i] = new int[mwidth];
+		lapb[i] = new int[mwidth];
+		pixelr[i] = new int[mwidth];
+		pixelg[i] = new int[mwidth];
+		pixelb[i] = new int[mwidth];
+		for (j = 0; j < mwidth; j++)
+		{
+			Pixel p = GetPixel(i, j);
+			// keep the edge
+			lapr[i][j] = pixelr[i][j] = p.r;
+			lapg[i][j] = pixelg[i][j] = p.g;
+			lapb[i][j] = pixelb[i][j] = p.b;
+		}
+
+	}
+	for (i = 1; i < mheight - 1; i++)
+	{
+		for (j = 1; j < mwidth - 1; j++)
+		{
+			R = -pixelr[i - 1][j - 1] - pixelr[i][j - 1] - pixelr[i + 1][j - 1]
+				- pixelr[i - 1][j] + 8 * pixelr[i][j] - pixelr[i + 1][j]
+				- pixelr[i - 1][j + 1] - pixelr[i][j + 1] - pixelr[i + 1][j + 1];
+			lapr[i][j] = abs(R);
+
+			G = -pixelg[i - 1][j - 1] - pixelg[i][j - 1] - pixelg[i + 1][j - 1]
+				- pixelg[i - 1][j] + 8 * pixelg[i][j] - pixelg[i + 1][j]
+				- pixelg[i - 1][j + 1] - pixelg[i][j + 1] - pixelg[i + 1][j + 1];
+			lapg[i][j] = abs(G);
+
+			B = -pixelb[i - 1][j - 1] - pixelb[i][j - 1] - pixelb[i + 1][j - 1]
+				- pixelb[i - 1][j] + 8 * pixelb[i][j] - pixelb[i + 1][j]
+				- pixelb[i - 1][j + 1] - pixelb[i][j + 1] - pixelb[i + 1][j + 1];
+			lapb[i][j] = abs(B);
+		}
+	}
+	int x, y;
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+			Pixel p = GetPixel(x, y);
+			Pixel sharpen_p(lapr[x][y], lapg[x][y], lapb[x][y], p.a);
+			GetPixel(x, y) = sharpen_p;
+		}
+	}
 }
 
 Image* Image::Scale(double sx, double sy)
