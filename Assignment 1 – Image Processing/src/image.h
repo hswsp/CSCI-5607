@@ -33,7 +33,10 @@ enum {
     IMAGE_CHANNEL_ALPHA,
     IMAGE_N_CHANNELS
 };
-
+inline double max(double x, double y)
+{
+	return (x > y) ? x : y;
+}
 
 /**
  * Image
