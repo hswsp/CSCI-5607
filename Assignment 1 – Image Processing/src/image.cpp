@@ -473,7 +473,31 @@ void Image::Blur(int n)
 void Image::Sharpen(int n)
 {
 	/* WORK HERE */
-	
+	Image *blur = new Image(*this);
+	float alpha = 2.0;
+	int x, y;
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+			
+			Pixel p = GetPixel(x, y);
+			blur->GetPixel(x, y).SetClamp(p.r,p.g,p.b,p.a);
+		}
+	}
+	blur->Blur(n);
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+
+			Pixel p = GetPixel(x, y);
+			Pixel b = blur->GetPixel(x, y);
+			Pixel sharpen_p(ComponentClamp(alpha*p.r+(1.0-alpha)*b.r), ComponentClamp(alpha*p.g + (1.0 - alpha)*b.g),
+				ComponentClamp(alpha*p.b + (1.0 - alpha)*b.b), p.a);
+			GetPixel(x, y) = sharpen_p;
+		}
+	}
 }
 
 void Image::EdgeDetect()
@@ -543,7 +567,7 @@ Image* Image::Scale(double sx, double sy)
 {
 	/* WORK HERE */
 	float r=max(1.0/sx,1.0/sy);
-	int i, j, k, m;
+	int i, j;
 	const int mheight = Height();
 	const int mwidth = Width();
 	int neww = sx * mwidth;
@@ -569,19 +593,48 @@ Image* Image::Scale(double sx, double sy)
 	//		pixelb[i][j] = p.b;
 	//	}
 	//}
-	for (i = int(xpt - sx * mwidth/ 2); i<int(xpt + sx * mwidth / 2); i++)
+	int b = 0;//new image index
+	for (j = 0; j < newh; j++)
 	{
-		for (j = int(ypt - sy * mheight / 2); j<int(ypt + sy * mheight / 2); j++) 
+		double ty = (j - ypt) / sy + mheight / 2;
+		int py = (int)ty;
+		for (i = 0; i< neww; i++)
 		{
-			k = int((i - xpt) / sx) + mwidth / 2;
-			m = int((j - ypt) / sy) + mheight / 2;
-			Pixel p = GetPixel(k, m);
-			int b = 4*(j * neww + i);
-			scale_p->data.raw[b++] = p.r;
-			scale_p->data.raw[b++] = p.g;
-			scale_p->data.raw[b++] = p.b;
-			scale_p->data.raw[b++] = p.a;
-			//scale_p->data.pixels->SetClamp(p.r,p.g,p.b,p.a); //pixelr[k][m], pixelg[k][m], pixelb[k][m],
+			double tx = (i - xpt) / sx + mwidth / 2;
+			int px = (int)tx;
+			int p1_2, p3_4;
+			//Find the value of the surrounding points
+			if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
+			{
+				//The edge copy
+				Pixel p = GetPixel(px, py);
+				scale_p->data.raw[b++] = p.r;
+				scale_p->data.raw[b++] = p.g;
+				scale_p->data.raw[b++] = p.b;
+				scale_p->data.raw[b++] = p.a;
+				continue;
+			}
+			Pixel p1 = GetPixel(px, py);
+			Pixel p2 = GetPixel(px + 1, py);
+			Pixel p3 = GetPixel(px, py + 1);
+			Pixel p4 = GetPixel(px + 1, py + 1);
+			//int b = 4 * (x * neww + y);
+			//r
+			p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
+			p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
+			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//g
+			p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
+			p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
+			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//b
+			p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
+			p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
+			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//a
+			p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
+			p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
+			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
 		}
 	}
 	return scale_p;
@@ -590,7 +643,8 @@ Image* Image::Scale(double sx, double sy)
 Image* Image::Rotate(double angle)
 {
 	/* WORK HERE */
-	int i, j, k, m;
+	int x, y, px, py;
+	double tx, ty, p1, p2, p3, p4, p1_2, p3_4;
 	const int mheight = Height();
 	const int mwidth = Width();
 	while (angle>180)
@@ -602,6 +656,8 @@ Image* Image::Rotate(double angle)
 		angle += 360;
 	}
 	float theta = angle / 180.0  * pi;
+	double SinTheta = sin(theta);
+	double CosTheta = cos(theta);
 	int neww, newh;
 	if (angle >= -90 && angle <= 90)
 	{
@@ -613,39 +669,85 @@ Image* Image::Rotate(double angle)
 		neww = mwidth * cos(pi-abs(theta)) + mheight * sin(pi - abs(theta));
 		newh = mheight * cos(pi - abs(theta)) + mwidth * sin(pi - abs(theta));
 	}
-	int xpt = neww / 2;
-	int ypt = newh / 2;
-	Image* scale_p = new Image(neww, newh);
+	double xpt = neww / 2;
+	double ypt = newh / 2;
+	double xr = mwidth / 2;
+	double yr = mheight / 2;
+	Image* rotate_p = new Image(neww, newh);
 	//int a = int(sqrt(float(mheight*mheight + mwidth * mwidth)) / 2);	//Take diagonal length 2a for side length
-	for (i = xpt - neww / 2; i < xpt + neww / 2; i++) 
+	double ConstX = -xpt * cos(theta) + ypt * sin(theta) + xr;
+	double ConstY = -ypt * cos(theta) - xpt * sin(theta) + yr;
+	int b = 0;//new image index
+	for (y = 0; y < newh; y++)
 	{
-		for (j = ypt - newh / 2; j < ypt + newh / 2; j++) 
+		tx = -y * SinTheta - CosTheta + ConstX;
+		ty = y * CosTheta - SinTheta + ConstY;
+		for (x = 0; x < neww; x++)
 		{
-			
-			int b = 4 * (i * newh + j);
-			k = int((i - xpt)*cos(theta) - (j - ypt)*sin(theta));
-			m = int((j - ypt)*cos(theta) + (i - xpt)*sin(theta));
-			k += mwidth / 2;
-			m += mheight / 2;
-			if (k >= 0 && k <  mwidth && m >= 0 && m < mheight)
+			tx += CosTheta; //x*CosTheta - y*SinTheta + ConstX; (x-xr)*CosTheta - (y-yr)*SinTheta + xr 
+			ty += SinTheta; //y*CosTheta + x*SinTheta + ConstY; (y-yr)*CosTheta + (x-xr)*SinTheta + yr 
+			px = (int)tx;
+			py = (int)ty;
+			if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
 			{
-				Pixel p = GetPixel(k, m);
-				scale_p->data.raw[b++] = p.r;
-				scale_p->data.raw[b++] = p.g;
-				scale_p->data.raw[b++] = p.b;
-				scale_p->data.raw[b++] = p.a;
-				
+				//The point in the non-original area is set to 255(white)
+				for(int i=0;i<4;++i)
+					rotate_p->data.raw[b++] = 255;
+				continue;
 			}
-			else//The point in the non-original area is set to 255(white)
-			{
-				scale_p->data.raw[b++] = 255;
-				scale_p->data.raw[b++] = 255;
-				scale_p->data.raw[b++] = 255;
-				scale_p->data.raw[b++] = 255;
-			}	
+			//Find the value of the surrounding points
+			Pixel p1 = GetPixel(px, py);
+			Pixel p2 = GetPixel(px+1, py);
+			Pixel p3 = GetPixel(px, py+1);
+			Pixel p4 = GetPixel(px+1, py+1);
+			//int b = 4 * (x * neww + y);
+			//r
+			p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
+			p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
+			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//g
+			p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
+			p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
+			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//b
+			p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
+			p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
+			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+			//a
+			p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
+			p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
+			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
 		}
 	}
-	return scale_p;
+	//for (i = xpt - neww / 2; i < xpt + neww / 2; i++) 
+	//{
+	//	for (j = ypt - newh / 2; j < ypt + newh / 2; j++) 
+	//	{
+	//		
+	//		int b = 4 * (i * neww + j);
+	//		k = int((i - xpt)*cos(theta) + (j - ypt)*sin(theta));
+	//		m = int((j - ypt)*cos(theta) - (i - xpt)*sin(theta));
+	//		k += mwidth / 2;
+	//		m += mheight / 2;
+	//		if (k >= 0 && k <  mwidth && m >= 0 && m < mheight)
+	//		{
+	//			Pixel p = GetPixel(k, m);
+	//			scale_p->data.raw[b++] = p.r;
+	//			scale_p->data.raw[b++] = p.g;
+	//			scale_p->data.raw[b++] = p.b;
+	//			scale_p->data.raw[b++] = p.a;
+	//			
+	//		}
+	//		else//The point in the non-original area is set to 255(white)
+	//		{
+	//			scale_p->data.raw[b++] = 255;
+	//			scale_p->data.raw[b++] = 255;
+	//			scale_p->data.raw[b++] = 255;
+	//			scale_p->data.raw[b++] = 255;
+	//		}	
+	//	}
+	//}
+	return rotate_p;
 }
 
 void Image::Fun()
