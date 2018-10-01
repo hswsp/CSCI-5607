@@ -1,4 +1,5 @@
 ﻿  image.cpp
+c1xx : warning C4199: two-phase name lookup is not supported for C++/CLI, C++/CX, or OpenMP; use /Zc:twoPhase-
 d:\github_repository\csci-5607\assignment 1 – image processing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
 d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(98): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
@@ -10,40 +11,56 @@ d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(1
 d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(178): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(179): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(180): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(496): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(497): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(569): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(573): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(574): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(623): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(624): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(625): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(627): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(628): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(629): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(631): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(632): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(633): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(635): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(636): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(637): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(658): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(664): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(665): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(669): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(670): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(707): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(711): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(715): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(719): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(647): warning C4101: 'p3': unreferenced local variable
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(647): warning C4101: 'p1': unreferenced local variable
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(647): warning C4101: 'p4': unreferenced local variable
-d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(647): warning C4101: 'p2': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(405): warning C4244: 'argument': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(452): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(453): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(454): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(555): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(556): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(628): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(632): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(633): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(682): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(683): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(684): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(686): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(687): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(688): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(690): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(691): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(692): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(694): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(695): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(696): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(717): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(723): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(724): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(728): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(729): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(765): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(769): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(773): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(777): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(706): warning C4101: 'p3': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(706): warning C4101: 'p1': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(706): warning C4101: 'p4': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(706): warning C4101: 'p2': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(948): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(953): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(957): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(961): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'tx': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'p3': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'p1': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'p4': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'p2': unreferenced local variable
+d:\github_repository\csci-5607\assignment 1 – image processing\src\image.cpp(815): warning C4101: 'ty': unreferenced local variable
   main.cpp
+c1xx : warning C4199: two-phase name lookup is not supported for C++/CLI, C++/CX, or OpenMP; use /Zc:twoPhase-
 d:\github_repository\csci-5607\assignment 1 – image processing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 1 – image processing\src\main.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
   pixel.cpp
+c1xx : warning C4199: two-phase name lookup is not supported for C++/CLI, C++/CX, or OpenMP; use /Zc:twoPhase-
 d:\github_repository\csci-5607\assignment 1 – image processing\src\pixel.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating Code...
   Image Processing.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 1 – Image Processing\Image Processing\Debug\Image Processing.exe

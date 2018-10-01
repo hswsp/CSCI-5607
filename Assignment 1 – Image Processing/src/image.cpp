@@ -5,7 +5,7 @@
 #include <string.h>
 #include <float.h>
 #include<time.h>
-#define pi 3.14159265358979323846
+#define pi 3.141592653589793238462643383279502884197169399375
 using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 /**
@@ -368,11 +368,45 @@ void Image::ExtractChannel(int channel)
 void Image::Quantize (int nbits)
 {
 	/* WORK HERE */
+	int x, y;
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+			Pixel p = GetPixel(x, y);
+			Pixel quant_p(PixelQuant(p, nbits));
+			GetPixel(x, y) = quant_p;
+		}
+	}
 }
 
 void Image::RandomDither (int nbits)
 {
 	/* WORK HERE */
+	/*Image *noise = new Image(*this);*/
+	float segma = 0.5;
+	int x, y;
+	/*for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+
+			Pixel p = GetPixel(x, y);
+			noise->GetPixel(x, y).SetClamp(p.r, p.g, p.b, p.a);
+		}
+	}*/
+	this->AddNoise(segma);
+	for (x = 0; x < Width(); x++)
+	{
+		for (y = 0; y < Height(); y++)
+		{
+			Pixel p = GetPixel(x, y);
+			//Pixel q = noise->GetPixel(x, y);
+			Pixel quant_p(PixelQuant(p+0.5, nbits));
+			GetPixel(x, y) = quant_p;
+		}
+	}
+
 }
 
 
@@ -400,6 +434,31 @@ const double
 void Image::FloydSteinbergDither(int nbits)
 {
 	/* WORK HERE */
+	const int mheight = Height();
+	const int mwidth = Width();
+	float er,eg,eb;
+	int x, y;
+	for (x = 0; x < mwidth - 1; x++)
+	{	
+		for (y = 1; y < mheight - 1; y++)
+		{
+			Pixel p = GetPixel(x, y);
+			Pixel p1 = GetPixel(x, y + 1);
+			Pixel p2 = GetPixel(x + 1, y + 1);
+			Pixel p3 = GetPixel(x + 1, y);
+			Pixel p4 = GetPixel(x + 1, y - 1);
+			Pixel quant_p(PixelQuant(p, nbits));
+			
+			er = p.r - quant_p.r;
+			eg = p.g - quant_p.g;
+			eb = p.b - quant_p.b;
+			GetPixel(x + 0, y + 1).SetClamp(p1.r+er* ALPHA, p1.g + eg * ALPHA, p1.b + eb * ALPHA,p1.a);
+			GetPixel(x + 1, y + 1).SetClamp(p2.r + er * DELTA, p2.g + eg * DELTA, p2.b + eb * DELTA, p2.a);
+			GetPixel(x + 1, y + 0).SetClamp(p3.r + er * GAMMA, p3.g + eg * GAMMA, p3.b + eb * GAMMA, p3.a);
+			GetPixel(x + 0, y + 1).SetClamp(p4.r + er * BETA, p4.g + eg * BETA, p4.b + eb * BETA, p4.a);
+			GetPixel(x, y) = quant_p;
+		}
+	}
 }
 
 void Image::Blur(int n)
@@ -474,7 +533,7 @@ void Image::Sharpen(int n)
 {
 	/* WORK HERE */
 	Image *blur = new Image(*this);
-	float alpha = 2.0;
+	float alpha = 2.0 ;
 	int x, y;
 	for (x = 0; x < Width(); x++)
 	{
@@ -674,7 +733,6 @@ Image* Image::Rotate(double angle)
 	double xr = mwidth / 2;
 	double yr = mheight / 2;
 	Image* rotate_p = new Image(neww, newh);
-	//int a = int(sqrt(float(mheight*mheight + mwidth * mwidth)) / 2);	//Take diagonal length 2a for side length
 	double ConstX = -xpt * cos(theta) + ypt * sin(theta) + xr;
 	double ConstY = -ypt * cos(theta) - xpt * sin(theta) + yr;
 	int b = 0;//new image index
@@ -753,6 +811,158 @@ Image* Image::Rotate(double angle)
 void Image::Fun()
 {
 	/* WORK HERE */
+	int x, y, px, py;
+	double tx, ty, p1, p2, p3, p4, p1_2, p3_4;
+	const int mheight = Height();
+	const int mwidth = Width();
+	double xr = (double)mwidth / 2.0f;
+	double yr = (double)mheight / 2.0f;
+	double factor = -0.01;
+	Image* fun_p = new Image(mwidth, mheight);
+
+	
+	//copy original image
+//   #pragma omp parallel for
+	int b = 0;//new image index
+	for (y = 0; y < mheight; y++)
+	{
+		for (x = 0; x < mwidth; x++)
+		{
+			fun_p->data.raw[b++] = GetPixel(x, y).r;
+			fun_p->data.raw[b++] = GetPixel(x, y).g;
+			fun_p->data.raw[b++] = GetPixel(x, y).b;
+			fun_p->data.raw[b++] = GetPixel(x, y).a;
+		}
+	}
+ //   #pragma omp parallel for
+	for (y = 0; y < mheight; y++)
+	{
+		double relY = yr - y;	
+		for (x = 0; x < mwidth; x++)
+		{
+			double relX = x - xr;
+			double orgAngle;
+			if (relX != 0)
+			{
+				orgAngle = atan(abs(relY) / abs(relX));
+				if (relX > 0 && relY < 0) orgAngle = 2.0f*pi - orgAngle;
+				else if (relX <= 0 && relY >= 0) orgAngle = pi - orgAngle;
+				else if (relX <= 0 && relY < 0) orgAngle += pi;
+			}
+			else
+			{
+				// Take care of rare special case
+				if (relY >= 0) orgAngle = 0.5f * pi;
+				else orgAngle = 1.5f * pi;
+			}
+			double radius = sqrt(relX*relX + relY * relY);
+			double newAngle = orgAngle + factor*radius;	// a progressive twist
+			//double newAngle = orgAngle + 1 / (factor*radius + (4.0f / pi));
+			double srcX = radius * cos(newAngle) ;
+			double srcY = radius * sin(newAngle) ;
+			srcX += xr;
+			srcY += yr;
+			srcY = mheight - srcY;
+			px = (int)(floor(srcX));
+			py = (int)(floor(srcY));
+			// Clamp the source to legal image pixel
+			/*if (px < 0) px = 0;
+			else if (px >= mwidth) px = mwidth - 1;
+			if (py < 0) py = 0;
+			else if (py >= mheight) py = mheight - 1;*/
+			if (px < 0)
+			{
+				if (py < 0)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(0, 0);
+					
+				}
+				else if (py > mheight - 2)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+				}
+				else
+				{
+					GetPixel(x, y) = fun_p->GetPixel(0, py);
+				}
+				continue;
+			}
+			else if (px > mwidth - 2)
+			{
+				if (py < 0)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+
+				}
+				else if (py > mheight - 2)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+				}
+				else
+				{
+					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, py);
+				}
+				continue;
+			}
+			else if (py >mheight -2)
+			{
+				if (px < 0)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+				}
+				else if (px > mwidth - 2)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+				}
+				else
+				{
+					GetPixel(x, y) = fun_p->GetPixel(px, mheight - 1);
+				}
+				continue;
+			}
+			else if(py < 0)
+			{
+				if (px < 0)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(0, 0);
+				}
+				else if (px > mwidth - 2)
+				{
+					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+				}
+				else
+				{
+					GetPixel(x, y) = fun_p->GetPixel(px, 0);
+				}				
+				continue;
+			}
+			//bilinear sampling
+			//Find the value of the surrounding points
+			Pixel p1 = fun_p->GetPixel(px, py);
+			Pixel p2 = fun_p->GetPixel(px + 1, py);
+			Pixel p3 = fun_p->GetPixel(px, py + 1);
+			Pixel p4 = fun_p->GetPixel(px + 1, py + 1);
+			//r
+			p1_2 = p1.r + (srcX - px)*(p2.r - p1.r);
+			p3_4 = p3.r + (srcX - px)*(p4.r - p3.r);
+			GetPixel(x, y).r = p1_2 + (srcY - py)*(p3_4 - p1_2);
+			
+			//g
+			p1_2 = p1.g + (srcX - px)*(p2.g - p1.g);
+			p3_4 = p3.g + (srcX - px)*(p4.g - p3.g);
+			GetPixel(x,y).g = p1_2 + (srcY - py)*(p3_4 - p1_2);
+			//b
+			p1_2 = p1.b + (srcX - px)*(p2.b - p1.b);
+			p3_4 = p3.b + (srcX - px)*(p4.b - p3.b);
+			GetPixel(x, y).b = p1_2 + (srcY - py)*(p3_4 - p1_2);
+			//a
+			p1_2 = p1.a + (srcX - px)*(p2.a - p1.a);
+			p3_4 = p3.a + (srcX - px)*(p4.a - p3.a);
+			GetPixel(x, y).a = p1_2 + (srcY - py)*(p3_4 - p1_2);
+		}
+	}
+	
+	return;
 }
 
 /**
