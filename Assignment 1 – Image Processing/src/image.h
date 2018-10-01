@@ -19,7 +19,7 @@
 /**
  * constants
  **/
-enum {
+enum SAMPLE {
     IMAGE_SAMPLING_POINT,
     IMAGE_SAMPLING_BILINEAR,
     IMAGE_SAMPLING_GAUSSIAN,
@@ -164,5 +164,5 @@ public:
     // Sample image using current sampling method.
     Pixel Sample(double u, double v);
 };
-
+void generateGaussianTemplate(double window[][11], int ksize, double sigma);
 #endif

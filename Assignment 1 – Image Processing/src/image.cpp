@@ -11,7 +11,11 @@ using namespace std;
 /**
  * Image
  **/
-
+//enum SAMPLE {
+//	IMAGE_SAMPLING_POINT,
+//	IMAGE_SAMPLING_BILINEAR,
+//	IMAGE_SAMPLING_GAUSSIAN,
+//};
 Image::Image (int width_, int height_){
 
     assert(width_ > 0);
@@ -175,10 +179,12 @@ void Image::ChangeContrast (double factor)
 		{
 			Pixel p = GetPixel(x, y);
 			Pixel contrast_p;
-			float r = int(factor*(p.r - Luminance) + Luminance) ;//- float(minr)) / scoper * 255.0
-			float g = int(factor*(p.g - Luminance) + Luminance);// - float(ming)) / scopeg * 255.0
-			float b = int(factor*(p.b - Luminance) + Luminance) ;//- float(minb)) / scopeb * 255.0
-			contrast_p.SetClamp((int)r, (int)g, (int)b, p.a);
+			Pixel avg_gray(Luminance, Luminance, Luminance, p.a);
+			contrast_p = PixelLerp(avg_gray, p, factor);
+			//float r = int(factor*(p.r - Luminance) + Luminance) ;//- float(minr)) / scoper * 255.0
+			//float g = int(factor*(p.g - Luminance) + Luminance);// - float(ming)) / scopeg * 255.0
+			//float b = int(factor*(p.b - Luminance) + Luminance) ;//- float(minb)) / scopeb * 255.0
+			//contrast_p.SetClamp((int)r, (int)g, (int)b, p.a);
 			GetPixel(x, y) = contrast_p;
 		}
 	}
@@ -317,7 +323,6 @@ void Image::ChangeSaturation(double factor)
 	//delete[] H;
 	//delete[] S;
 	//delete[] I;
-
 	for (int x = 0; x < width; x++)
 	{
 		for (int y = 0; y < height; y++)
@@ -338,7 +343,20 @@ void Image::ChangeSaturation(double factor)
 Image* Image::Crop(int x, int y, int w, int h)
 {
 	/* WORK HERE */
-	return NULL;
+	const int mheight = Height();
+	const int mwidth = Width();
+	assert((x + w < mwidth)&&(y + h < mheight));
+	Image* crop_p = new Image(w, h);
+	int i, j;
+	for (i = x; i < x+w; i++)
+	{
+		for (j = y; j < y+h; j++)
+		{
+			Pixel p = GetPixel(i, j);
+			crop_p->GetPixel(i-x, j-y) = p;
+		}
+	}
+	return crop_p;
 }
 
 
@@ -635,6 +653,15 @@ Image* Image::Scale(double sx, double sy)
 	//new image's center
 	int xpt = neww / 2;
 	int ypt = newh / 2;
+	SAMPLE type = IMAGE_SAMPLING_BILINEAR;//   IMAGE_SAMPLING_GAUSSIAN  IMAGE_SAMPLING_POINT
+	int ksize = 4; //using 4*4 gaussian
+	double segma = 0.8;
+	//make Gaussian template
+	double window[11][11];
+	if (type == IMAGE_SAMPLING_GAUSSIAN)
+	{
+		generateGaussianTemplate(window, ksize, segma);
+	}
 	//int **pixelr = new int*[mwidth];
 	//int **pixelg = new int*[mwidth];
 	//int **pixelb = new int*[mwidth];
@@ -662,38 +689,93 @@ Image* Image::Scale(double sx, double sy)
 			double tx = (i - xpt) / sx + mwidth / 2;
 			int px = (int)tx;
 			int p1_2, p3_4;
-			//Find the value of the surrounding points
-			if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
+			switch (type)
 			{
-				//The edge copy
-				Pixel p = GetPixel(px, py);
-				scale_p->data.raw[b++] = p.r;
-				scale_p->data.raw[b++] = p.g;
-				scale_p->data.raw[b++] = p.b;
-				scale_p->data.raw[b++] = p.a;
-				continue;
+				case IMAGE_SAMPLING_BILINEAR:
+				{
+					//Find the value of the surrounding points
+					if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
+					{
+						//The edge copy
+						Pixel p = GetPixel(px, py);
+						scale_p->data.raw[b++] = p.r;
+						scale_p->data.raw[b++] = p.g;
+						scale_p->data.raw[b++] = p.b;
+						scale_p->data.raw[b++] = p.a;
+						continue;
+					}
+					Pixel p1 = GetPixel(px, py);
+					Pixel p2 = GetPixel(px + 1, py);
+					Pixel p3 = GetPixel(px, py + 1);
+					Pixel p4 = GetPixel(px + 1, py + 1);
+					//r
+					p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
+					p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
+					scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//g
+					p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
+					p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
+					scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//b
+					p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
+					p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
+					scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//a
+					p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
+					p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
+					scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2); break;
+				}
+				case IMAGE_SAMPLING_GAUSSIAN:
+				{
+					if (px<1 || px> mwidth - ksize + 1 || py<1 || py > mheight - ksize + 1)
+					{
+						//The edge copy
+						Pixel p = GetPixel(px, py);
+						scale_p->data.raw[b++] = p.r;
+						scale_p->data.raw[b++] = p.g;
+						scale_p->data.raw[b++] = p.b;
+						scale_p->data.raw[b++] = p.a;
+						continue;
+					}
+					Pixel **p = new Pixel*[ksize];
+					double pr = 0;
+					double pg = 0;
+					double pb = 0;
+					double pa = 0;
+					for (int k = 0; k < ksize; k++)
+					{
+						p[k] = new Pixel[ksize];
+					}
+					for (int i = 0; i < ksize; ++i)
+						for (int j = 0; j < ksize; ++j)
+						{
+							p[i][j] = GetPixel(px - 1 + i, py - 1 + j);
+							pr = pr + p[i][j].r*window[i][j];
+							pg = pg + p[i][j].g*window[i][j];
+							pb = pb + p[i][j].b*window[i][j];
+							pa = pa + p[i][j].a*window[i][j];
+						}
+					scale_p->data.raw[b++] = pr;
+					scale_p->data.raw[b++] = pg;
+					scale_p->data.raw[b++] = pb;
+					scale_p->data.raw[b++] = pa;
+					for (int k = 0; k < ksize; ++k)
+					{
+						delete[] p[k];
+					}
+					delete[] p;
+					break;
+				}
+				case IMAGE_SAMPLING_POINT:
+				{
+					Pixel p1 = GetPixel(px, py);
+					scale_p->data.raw[b++] = p1.r;
+					scale_p->data.raw[b++] = p1.g;
+					scale_p->data.raw[b++] = p1.b;
+					scale_p->data.raw[b++] = p1.a;
+					break;
+				}
 			}
-			Pixel p1 = GetPixel(px, py);
-			Pixel p2 = GetPixel(px + 1, py);
-			Pixel p3 = GetPixel(px, py + 1);
-			Pixel p4 = GetPixel(px + 1, py + 1);
-			//int b = 4 * (x * neww + y);
-			//r
-			p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
-			p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
-			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//g
-			p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
-			p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
-			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//b
-			p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
-			p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
-			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//a
-			p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
-			p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
-			scale_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
 		}
 	}
 	return scale_p;
@@ -706,6 +788,15 @@ Image* Image::Rotate(double angle)
 	double tx, ty, p1, p2, p3, p4, p1_2, p3_4;
 	const int mheight = Height();
 	const int mwidth = Width();
+	SAMPLE type = IMAGE_SAMPLING_BILINEAR;//   IMAGE_SAMPLING_GAUSSIAN IMAGE_SAMPLING_POINT
+	int ksize = 4; //using 4*4 gaussian
+	double segma = 0.8;
+	//make Gaussian template
+	double window[11][11];
+	if (type == IMAGE_SAMPLING_GAUSSIAN)
+	{
+		generateGaussianTemplate(window, ksize, segma);
+	}
 	while (angle>180)
 	{
 		angle -= 360;
@@ -744,37 +835,98 @@ Image* Image::Rotate(double angle)
 		{
 			tx += CosTheta; //x*CosTheta - y*SinTheta + ConstX; (x-xr)*CosTheta - (y-yr)*SinTheta + xr 
 			ty += SinTheta; //y*CosTheta + x*SinTheta + ConstY; (y-yr)*CosTheta + (x-xr)*SinTheta + yr 
-			px = (int)tx;
-			py = (int)ty;
-			if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
+			px = (int)(floor(tx));
+			py = (int)(floor(ty));
+			
+			switch (type)
 			{
-				//The point in the non-original area is set to 255(white)
-				for(int i=0;i<4;++i)
-					rotate_p->data.raw[b++] = 255;
-				continue;
+				case IMAGE_SAMPLING_BILINEAR:		
+				{
+					if (px<0 || px> mwidth - 2 || py<0 || py>mheight - 2)
+					{
+						//The point in the non-original area is set to 255(white)
+						for (int i = 0; i < 4; ++i)
+							rotate_p->data.raw[b++] = 255;
+						continue;
+					}
+					//Find the value of the surrounding points
+					Pixel p1 = GetPixel(px, py);
+					Pixel p2 = GetPixel(px + 1, py);
+					Pixel p3 = GetPixel(px, py + 1);
+					Pixel p4 = GetPixel(px + 1, py + 1);
+					//int b = 4 * (x * neww + y);
+					//r
+					p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
+					p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
+					rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//g
+					p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
+					p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
+					rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//b
+					p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
+					p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
+					rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
+					//a
+					p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
+					p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
+					rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2); break;
+				}
+				case IMAGE_SAMPLING_GAUSSIAN:
+				{
+					if (px<1 || px> mwidth - ksize + 1 || py<1 || py > mheight - ksize + 1)
+					{
+						//The point in the non-original area is set to 255(white)
+						for (int i = 0; i < 4; ++i)
+							rotate_p->data.raw[b++] = 255;
+						continue;
+					}
+					Pixel **p=new Pixel*[ksize];
+					double pr = 0;
+					double pg = 0;
+					double pb = 0;
+					double pa = 0;
+					for (int k = 0; k < ksize; k++)
+					{
+						p[k] = new Pixel[ksize];
+					}
+					for(int i=0;i< ksize;++i)
+						for (int j = 0; j < ksize; ++j)
+						{
+							p[i][j] = GetPixel(px-1+i, py-1+j);
+							pr = pr + p[i][j].r*window[i][j];
+							pg = pg + p[i][j].g*window[i][j];
+							pb = pb + p[i][j].b*window[i][j];
+							pa = pa + p[i][j].a*window[i][j];
+						}
+					rotate_p->data.raw[b++] = pr;
+					rotate_p->data.raw[b++] = pg;
+					rotate_p->data.raw[b++] = pb;
+					rotate_p->data.raw[b++] = pa;
+					for (int k = 0; k < ksize; ++k)
+					{
+						delete[] p[k];
+					}
+					delete[] p;
+					break;
+				}
+				case IMAGE_SAMPLING_POINT:
+				{
+					if (px<0 || px> mwidth - 1 || py<0 || py>mheight - 1)
+					{
+						//The point in the non-original area is set to 255(white)
+						for (int i = 0; i < 4; ++i)
+							rotate_p->data.raw[b++] = 255;
+						continue;
+					}
+					Pixel p1 = GetPixel(px, py);
+					rotate_p->data.raw[b++] = p1.r;
+					rotate_p->data.raw[b++] = p1.g;
+					rotate_p->data.raw[b++] = p1.b;
+					rotate_p->data.raw[b++] = p1.a;
+					break;
+				}
 			}
-			//Find the value of the surrounding points
-			Pixel p1 = GetPixel(px, py);
-			Pixel p2 = GetPixel(px+1, py);
-			Pixel p3 = GetPixel(px, py+1);
-			Pixel p4 = GetPixel(px+1, py+1);
-			//int b = 4 * (x * neww + y);
-			//r
-			p1_2 = p1.r + (tx - px)*(p2.r - p1.r);
-			p3_4 = p3.r + (tx - px)*(p4.r - p3.r);
-			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//g
-			p1_2 = p1.g + (tx - px)*(p2.g - p1.g);
-			p3_4 = p3.g + (tx - px)*(p4.g - p3.g);
-			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//b
-			p1_2 = p1.b + (tx - px)*(p2.b - p1.b);
-			p3_4 = p3.b + (tx - px)*(p4.b - p3.b);
-			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
-			//a
-			p1_2 = p1.a + (tx - px)*(p2.a - p1.a);
-			p3_4 = p3.a + (tx - px)*(p4.a - p3.a);
-			rotate_p->data.raw[b++] = p1_2 + (ty - py)*(p3_4 - p1_2);
 		}
 	}
 	//for (i = xpt - neww / 2; i < xpt + neww / 2; i++) 
@@ -819,7 +971,15 @@ void Image::Fun()
 	double yr = (double)mheight / 2.0f;
 	double factor = -0.01;
 	Image* fun_p = new Image(mwidth, mheight);
-
+	SAMPLE type = IMAGE_SAMPLING_GAUSSIAN;//  IMAGE_SAMPLING_POINT IMAGE_SAMPLING_BILINEAR
+	int ksize = 4; //using 4*4 gaussian
+	double segma = 0.8;
+	//make Gaussian template
+	double window[11][11];
+	if (type == IMAGE_SAMPLING_GAUSSIAN)
+	{
+		generateGaussianTemplate(window, ksize, segma);
+	}
 	
 	//copy original image
 //   #pragma omp parallel for
@@ -865,100 +1025,276 @@ void Image::Fun()
 			srcY = mheight - srcY;
 			px = (int)(floor(srcX));
 			py = (int)(floor(srcY));
-			// Clamp the source to legal image pixel
-			/*if (px < 0) px = 0;
-			else if (px >= mwidth) px = mwidth - 1;
-			if (py < 0) py = 0;
-			else if (py >= mheight) py = mheight - 1;*/
-			if (px < 0)
+			switch (type)
 			{
-				if (py < 0)
+				case IMAGE_SAMPLING_BILINEAR:
 				{
-					GetPixel(x, y) = fun_p->GetPixel(0, 0);
-					
-				}
-				else if (py > mheight - 2)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
-				}
-				else
-				{
-					GetPixel(x, y) = fun_p->GetPixel(0, py);
-				}
-				continue;
-			}
-			else if (px > mwidth - 2)
-			{
-				if (py < 0)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+					// process the Boundary 
+					if (px < 0)
+					{
+						if (py < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
 
+						}
+						else if (py > mheight - 2)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, py);
+						}
+						continue;
+					}
+					else if (px > mwidth - 2)
+					{
+						if (py < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+
+						}
+						else if (py > mheight - 2)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, py);
+						}
+						continue;
+					}
+					else if (py > mheight - 2)
+					{
+						if (px < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else if (px > mwidth - 2)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, mheight - 1);
+						}
+						continue;
+					}
+					else if (py < 0)
+					{
+						if (px < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
+						}
+						else if (px > mwidth - 2)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, 0);
+						}
+						continue;
+					}
+					//bilinear sampling
+					//Find the value of the surrounding points
+					Pixel p1 = fun_p->GetPixel(px, py);
+					Pixel p2 = fun_p->GetPixel(px + 1, py);
+					Pixel p3 = fun_p->GetPixel(px, py + 1);
+					Pixel p4 = fun_p->GetPixel(px + 1, py + 1);
+					//r
+					p1_2 = p1.r + (srcX - px)*(p2.r - p1.r);
+					p3_4 = p3.r + (srcX - px)*(p4.r - p3.r);
+					GetPixel(x, y).r = p1_2 + (srcY - py)*(p3_4 - p1_2);
+
+					//g
+					p1_2 = p1.g + (srcX - px)*(p2.g - p1.g);
+					p3_4 = p3.g + (srcX - px)*(p4.g - p3.g);
+					GetPixel(x, y).g = p1_2 + (srcY - py)*(p3_4 - p1_2);
+					//b
+					p1_2 = p1.b + (srcX - px)*(p2.b - p1.b);
+					p3_4 = p3.b + (srcX - px)*(p4.b - p3.b);
+					GetPixel(x, y).b = p1_2 + (srcY - py)*(p3_4 - p1_2);
+					//a
+					p1_2 = p1.a + (srcX - px)*(p2.a - p1.a);
+					p3_4 = p3.a + (srcX - px)*(p4.a - p3.a);
+					GetPixel(x, y).a = p1_2 + (srcY - py)*(p3_4 - p1_2); break; 
 				}
-				else if (py > mheight - 2)
+				case IMAGE_SAMPLING_GAUSSIAN:
 				{
-					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+					// process the Boundary 
+					if (px < 1)
+					{
+						if (py < 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
+
+						}
+						else if (py > mheight - ksize + 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, py);
+						}
+						continue;
+					}
+					else if (px > mwidth - ksize + 1)
+					{
+						if (py < 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+
+						}
+						else if (py > mheight - ksize + 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, py);
+						}
+						continue;
+					}
+					else if (py > mheight - ksize + 1)
+					{
+						if (px < 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else if (px > mwidth - ksize + 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, mheight - 1);
+						}
+						continue;
+					}
+					else if (py < 1)
+					{
+						if (px < 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
+						}
+						else if (px > mwidth - ksize + 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, 0);
+						}
+						continue;
+					}
+					Pixel **p = new Pixel*[ksize];
+					double pr = 0;
+					double pg = 0;
+					double pb = 0;
+					double pa = 0;
+					for (int k = 0; k < ksize; k++)
+					{
+						p[k] = new Pixel[ksize];
+					}
+					for (int i = 0; i < ksize; ++i)
+						for (int j = 0; j < ksize; ++j)
+						{
+							p[i][j] = fun_p->GetPixel(px - 1 + i, py - 1 + j);
+							pr = pr + p[i][j].r*window[i][j];
+							pg = pg + p[i][j].g*window[i][j];
+							pb = pb + p[i][j].b*window[i][j];
+							pa = pa + p[i][j].a*window[i][j];
+						}
+					GetPixel(x, y).r = pr;
+					GetPixel(x, y).g = pg;
+					GetPixel(x, y).b = pb;
+					GetPixel(x, y).a = pa;
+					for (int k = 0; k < ksize; ++k)
+					{
+						delete[] p[k];
+					}
+					delete[] p;
+					break;
 				}
-				else
+				case IMAGE_SAMPLING_POINT:
 				{
-					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, py);
+					// process the Boundary 
+					if (px < 0)
+					{
+						if (py < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
+
+						}
+						else if (py > mheight - 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, py);
+						}
+						continue;
+					}
+					else if (px > mwidth - 1)
+					{
+						if (py < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+
+						}
+						else if (py > mheight - 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, py);
+						}
+						continue;
+					}
+					else if (py > mheight - 1)
+					{
+						if (px < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
+						}
+						else if (px > mwidth - 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, mheight - 1);
+						}
+						continue;
+					}
+					else if (py < 0)
+					{
+						if (px < 0)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(0, 0);
+						}
+						else if (px > mwidth - 1)
+						{
+							GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
+						}
+						else
+						{
+							GetPixel(x, y) = fun_p->GetPixel(px, 0);
+						}
+						continue;
+					}
+					Pixel p1 = fun_p->GetPixel(px, py);
+					GetPixel(x, y).r = p1.r;
+					GetPixel(x, y).g = p1.g;
+					GetPixel(x, y).b = p1.b;
+					GetPixel(x, y).a = p1.a;
+					break;
 				}
-				continue;
 			}
-			else if (py >mheight -2)
-			{
-				if (px < 0)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(0, mheight - 1);
-				}
-				else if (px > mwidth - 2)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, mheight - 1);
-				}
-				else
-				{
-					GetPixel(x, y) = fun_p->GetPixel(px, mheight - 1);
-				}
-				continue;
-			}
-			else if(py < 0)
-			{
-				if (px < 0)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(0, 0);
-				}
-				else if (px > mwidth - 2)
-				{
-					GetPixel(x, y) = fun_p->GetPixel(mwidth - 1, 0);
-				}
-				else
-				{
-					GetPixel(x, y) = fun_p->GetPixel(px, 0);
-				}				
-				continue;
-			}
-			//bilinear sampling
-			//Find the value of the surrounding points
-			Pixel p1 = fun_p->GetPixel(px, py);
-			Pixel p2 = fun_p->GetPixel(px + 1, py);
-			Pixel p3 = fun_p->GetPixel(px, py + 1);
-			Pixel p4 = fun_p->GetPixel(px + 1, py + 1);
-			//r
-			p1_2 = p1.r + (srcX - px)*(p2.r - p1.r);
-			p3_4 = p3.r + (srcX - px)*(p4.r - p3.r);
-			GetPixel(x, y).r = p1_2 + (srcY - py)*(p3_4 - p1_2);
-			
-			//g
-			p1_2 = p1.g + (srcX - px)*(p2.g - p1.g);
-			p3_4 = p3.g + (srcX - px)*(p4.g - p3.g);
-			GetPixel(x,y).g = p1_2 + (srcY - py)*(p3_4 - p1_2);
-			//b
-			p1_2 = p1.b + (srcX - px)*(p2.b - p1.b);
-			p3_4 = p3.b + (srcX - px)*(p4.b - p3.b);
-			GetPixel(x, y).b = p1_2 + (srcY - py)*(p3_4 - p1_2);
-			//a
-			p1_2 = p1.a + (srcX - px)*(p2.a - p1.a);
-			p3_4 = p3.a + (srcX - px)*(p4.a - p3.a);
-			GetPixel(x, y).a = p1_2 + (srcY - py)*(p3_4 - p1_2);
 		}
 	}
 	
@@ -990,4 +1326,31 @@ Pixel Image::Sample (double u, double v){
 
 	}
 	return Pixel();
+}
+
+void generateGaussianTemplate(double window[][11],int ksize, double sigma)
+{
+	// Assuming that the maximum size of the template will not exceed 11
+	int center = ksize / 2; // The center position of the template, which is the origin of the coordinates
+	double x2, y2;
+	double sum = 0;
+	for (int i = 0; i < ksize; i++)
+	{
+		x2 = pow(i - center, 2);
+		for (int j = 0; j < ksize; j++)
+		{
+			y2 = pow(j - center, 2);
+			double g = exp(-(x2 + y2) / (2 * sigma * sigma));//here mean value = 0
+			g /= 2 * pi * sigma;
+			window[i][j] = g;
+			sum += g;
+		}
+	}
+	for (int i = 0; i < ksize; i++)
+	{
+		for (int j = 0; j < ksize; j++)
+		{
+			window[i][j] /= sum; // Normalize
+		}
+	}
 }
