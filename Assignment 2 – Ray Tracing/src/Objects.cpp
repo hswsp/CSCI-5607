@@ -64,3 +64,13 @@ IntersectResult Sphere:: intersect(const Ray& ray) const
 	}
 	return IntersectResult();
 }
+
+Ray Camera::generateRay(float x, float y)const
+{
+	Vector r, u;
+	r = right * (x - 0.5)*fovScale;
+	u = up * (y - 0.5)*fovScale;
+	r = front + r + u;
+	r.normalize();
+	return Ray(eye, r);
+}
