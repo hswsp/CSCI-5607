@@ -1,0 +1,4 @@
+﻿  Ray Tracing.cpp
+d:\github_repository\csci-5607\assignment 2 – ray tracing\ray tracing\ray tracing\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+  d:\github_repository\csci-5607\assignment 2 – ray tracing\ray tracing\ray tracing\ray tracing.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
+  Ray Tracing.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Debug\Ray Tracing.exe
