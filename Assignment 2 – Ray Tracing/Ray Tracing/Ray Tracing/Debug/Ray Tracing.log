@@ -1,4 +1,74 @@
-﻿  Ray Tracing.cpp
-d:\github_repository\csci-5607\assignment 2 – ray tracing\ray tracing\ray tracing\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
-  d:\github_repository\csci-5607\assignment 2 – ray tracing\ray tracing\ray tracing\ray tracing.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
+﻿  image.cpp
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+  d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(102): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(109): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(112): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(113): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(144): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(147): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(182): warning C4244: 'argument': conversion from 'float' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(423): warning C4244: 'argument': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(470): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(471): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(472): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(573): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(574): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(646): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(650): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(651): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(712): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(713): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(714): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(716): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(717): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(718): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(720): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(721): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(722): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(724): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(725): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(726): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(758): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(759): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(760): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(761): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(808): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(814): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(815): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(819): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(820): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(861): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(865): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(869): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(873): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(902): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(903): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(904): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(905): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(788): warning C4101: 'p3': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(788): warning C4101: 'p1': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(788): warning C4101: 'p4': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(788): warning C4101: 'p2': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1108): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1113): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1117): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1121): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1210): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1211): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1212): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(1213): warning C4244: '=': conversion from 'double' to 'Component', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'tx': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'p3': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'p1': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'p4': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'p2': unreferenced local variable
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(967): warning C4101: 'ty': unreferenced local variable
+  main.cpp
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+  d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
+  Objects.cpp
+  pixel.cpp
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\pixel.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
   Ray Tracing.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Debug\Ray Tracing.exe

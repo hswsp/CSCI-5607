@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{B18EE907-95BC-4D5A-B4D1-FB716DE12DFE}</ProjectGuid>
+    <ProjectGuid>{4A931BAB-8FD8-401A-B3FC-2C7E4B578225}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RayTracing</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
@@ -151,10 +151,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="stb_image_write.h" />
+    <ClInclude Include="..\..\src\image.h" />
+    <ClInclude Include="..\..\src\Objects.h" />
+    <ClInclude Include="..\..\src\pixel.h" />
+    <ClInclude Include="..\..\src\stb_image.h" />
+    <ClInclude Include="..\..\src\stb_image_write.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Ray Tracing.cpp" />
+    <ClCompile Include="..\..\src\image.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\Objects.cpp" />
+    <ClCompile Include="..\..\src\pixel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
