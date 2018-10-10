@@ -1,5 +1,7 @@
 #include<math.h>
 #include<iostream>
+#include<vector>
+using namespace std;
 typedef unsigned int Color;
 #define PI 3.141592653589793238462643383279502884197169399375
 struct Vector
@@ -55,6 +57,7 @@ public:
 	Material(float ref) :reflectiveness(ref){}
 	
 };
+//All Objects in the scene
 class Geometry
 {
 public:
@@ -76,6 +79,7 @@ public:
 	IntersectResult intersect(const Ray& ray) const;
 };
 
+//viwer
 class Camera
 {
 public:
@@ -83,6 +87,8 @@ public:
 	float  fov, fovScale;
 	Camera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov) :eye(aEye), front(aFront), refup(aUp), fov(aFov)
 	{
+		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the 
+		//¡°height¡± angle of the viewing frustum
 		right = front.cross(refup);
 		up = right.cross(front);
 		fovScale = tan(fov*0.5*PI / 180) * 2;
@@ -90,3 +96,19 @@ public:
 	Ray generateRay(float x, float y)const;
 };
 
+//Scene
+class Scene
+{
+public:
+	vector<Geometry*> objects;
+	~Scene()
+	{
+		for (auto it = objects.begin(); it != objects.end(); ++it)
+			delete *it;
+	}
+	void addObject(Geometry* obj)
+	{
+		objects.push_back(obj);
+	}
+	IntersectResult intersect(const Ray& ray)const;
+};

@@ -4,11 +4,13 @@ d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.
   main.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(88): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(94): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(62): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
   Objects.cpp
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(88): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(71): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(72): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(94): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(64): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(65): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(75): warning C4305: '=': truncation from 'double' to 'float'
   pixel.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\pixel.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating Code...
