@@ -159,12 +159,14 @@
     <ClInclude Include="..\..\src\pixel.h" />
     <ClInclude Include="..\..\src\stb_image.h" />
     <ClInclude Include="..\..\src\stb_image_write.h" />
+    <ClInclude Include="..\..\src\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\image.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\Objects.cpp" />
     <ClCompile Include="..\..\src\pixel.cpp" />
+    <ClCompile Include="..\..\src\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\SDL2.dll" />

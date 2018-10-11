@@ -1,9 +1,4 @@
 //Image.h
-//
-//Class representing an image
-//  original by Wagner Correa, 1999
-//  turned to C++ by Robert Osada, 2000
-//  updated by Stephen J. Guy, 2017
 
 #ifndef IMAGE_INCLUDED
 #define IMAGE_INCLUDED
@@ -11,10 +6,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include "pixel.h"
-
-
 #include "stb_image.h"
 #include "stb_image_write.h"
+#include "Objects.h"
 
 /**
  * constants
@@ -57,11 +51,12 @@ public:
     //uint8_t *pixelData;
     int width, height, num_pixels;
     int sampling_method;
+	Pixel * backgroud;
 	//BMP* bmpImg;
 
 public:
     // Creates a blank image with the given dimensions
-    Image (int width, int height);
+	Image(int width, int height, Pixel*);
 
     // Copy iamage
     Image (const Image& src);
@@ -85,8 +80,8 @@ public:
 	// Make file from image
 	void Write( char *fname );
 
-    // Adds noise to an image.  The amount of noise is given by the factor
-    // in the range [0.0..1.0].  0.0 adds no noise.  1.0 adds a lot of noise.
+    //Ray Cast
+	void Raycast(Camera camera, Scene scene) const;
     
 };
 #endif

@@ -11,12 +11,7 @@ using namespace std;
 /**
  * Image
  **/
-//enum SAMPLE {
-//	IMAGE_SAMPLING_POINT,
-//	IMAGE_SAMPLING_BILINEAR,
-//	IMAGE_SAMPLING_GAUSSIAN,
-//};
-Image::Image (int width_, int height_){
+Image::Image (int width_, int height_, Pixel* background):backgroud(background){
 
     assert(width_ > 0);
     assert(height_ > 0);
@@ -25,7 +20,6 @@ Image::Image (int width_, int height_){
     height          = height_;
     num_pixels      = width * height;
     sampling_method = IMAGE_SAMPLING_POINT;
-    
     data.raw = new uint8_t[num_pixels*4];
 	int b = 0; //which byte to write to
 	for (int j = 0; j < height; j++){
@@ -94,4 +88,34 @@ void Image::Write(char* fname){
 	}
 }
 
+void Image::Raycast(Camera camera, Scene scene) const
+{
+	//Image *img = new Image(width, height);
+	float ratio = float(width) / height;
+	for (int i = 0; i < width; ++i)
+	{
+		//Vector eye;
+		Ray ray;
+		float x =1 - (i+0.5) / float(width);
+		for (int j = 0; j < height; j++)
+		{
+			
+			float y =1 - (j+0.5) / float(height);
+			ray = camera.generateRay(x, y, ratio);
+			IntersectResult hit = scene.intersect(ray);
+			//color	
+			if (hit.geometry == NULL)
+			{
+				GetPixel(i, j)=*this->backgroud;
+			}
+			else 
+			{
+				Pixel org(255, 255, 255, 255);
+				GetPixel(i, j) = org;
+			}
+				
+		}
+	}
+	return;
+}
 

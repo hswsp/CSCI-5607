@@ -1,39 +1,5 @@
 #include"Objects.h"
-//Vector
-inline Vector operator*(float l, const Vector& r) { return r * l; }
-float Vector::sqrLength() const
-{
-	return x * x + y * y + z * z;
-}
-float Vector::length() const
-{
-	return sqrt(sqrLength());
-}
-Vector Vector::operator+(const Vector& r) const {
-	return Vector(x + r.x, y + r.y, z + r.z);
-}
-Vector Vector::operator-(const Vector& r) const {
-	return Vector(x - r.x, y - r.y, z - r.z);
-}
-Vector Vector::operator*(float v) const {
-	return Vector(v * x, v * y, v * z);
-}
-Vector Vector::operator/(float v) const {
-	float inv = 1 / v;
-	return *this * inv;
-}
-Vector Vector::normalize() const {
-	float invlen = 1 / length();
-	return *this * invlen;
-}
-float Vector::dot(const Vector& r) const {
-	return x * r.x + y * r.y + z * r.z;
-}
-Vector Vector::cross(const Vector& r) const {
-	return Vector(-z * r.y + y * r.z,
-		z * r.x - x * r.z,
-		-y * r.x + x * r.y);
-}
+
 Vector Ray::getPoint(float t) const
 {
 	return origin + t * direction;
@@ -42,14 +8,16 @@ Vector Ray::getPoint(float t) const
 
 IntersectResult Sphere:: intersect(const Ray& ray) const
 {
-	Vector v = ray.origin - center;
-	float a0 = v.sqrLength() - sqrRadius;
-	float DdotV = ray.direction.dot(v);
-	if (DdotV <= 0.0) 
+	//make sure direction vector is normalized, the |a|=1;
+	Vector v = ray.origin - center;//P_0-C
+	float a0 = v.sqrLength() - sqrRadius;//c
+	float DdotV = ray.direction.dot(v);//b/2
+	if (DdotV <= 0.0) //ensure t>0
 	{
 		float discr = DdotV * DdotV - a0;
-		if (discr >= 0.0) {
-			float d = -DdotV - sqrt(discr);
+		if (discr >= 0.0) 
+		{
+			float d = -DdotV - sqrt(discr);//intersection distance
 			Vector p = ray.getPoint(d);
 			Vector n = (p - center).normalize();
 			return IntersectResult(this, d, p, n);
@@ -58,14 +26,23 @@ IntersectResult Sphere:: intersect(const Ray& ray) const
 	return IntersectResult();
 }
 
-Ray Camera::generateRay(float x, float y)const
+Ray Camera::generateRay(float x, float y, float ratio)const
 {
 	Vector r, u;
-	r = right * (x + 0.5)*fovScale;
-	u = up * (y + 0.5)*fovScale;
+	float tranScle = ratio * fovScale;
+	//o = front - front.length()*tranScle/2*right.normalize();
+	/*r = front.length()*right.normalize()*tranScle * (x-0.5);
+	u = -(y-0.5)*front.length()*fovScale*up.normalize();*/
+	r = right * (x - 0.5)*fovScale*ratio;
+	u = up * (y - 0.5)*fovScale;//
 	r = front + r + u;
-	r.normalize();
-	return Ray(eye, r);
+	r = r.normalize();
+	return Ray(this->eye, r);
+}
+
+void Scene::addObject(Geometry* obj)
+{
+	objects.push_back(obj);
 }
 
 IntersectResult Scene::intersect(const Ray& ray)const
@@ -73,10 +50,11 @@ IntersectResult Scene::intersect(const Ray& ray)const
 	IntersectResult temp, result;
 	result.geometry = NULL;
 	result.distance = 1.0E30;
-	for (auto it = objects.begin(); it != objects.end(); ++it)
+	//vector<Geometry*>::const_iterator  it;
+	for (auto it =  objects.begin(); it != objects.end(); ++it)
 	{
 		temp = (*it)->intersect(ray);
-		if ((temp.geometry != NULL) && (temp.distance < result.distance))
+		if ((temp.geometry != NULL) && (temp.distance < result.distance))//show the lastest object
 			result = temp;
 	}
 	return result;

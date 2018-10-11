@@ -1,5 +1,4 @@
 #include "image.h"
-#include"Objects.h"
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -26,8 +25,131 @@ clock_t clocks;
 int frames;
 float rad;
 static Color buffer[HEIGHT][WIDTH];
+//store in file
+void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene);
+//show in window
+bool ShowImage(string outFile);
 
-void CreateImage(string filepath, Image *img);
+int main() 
+{
+	
+	int Width = 640;
+	int Height = 480;
+	Image *img = NULL;
+	bool did_output = false;
+	Camera* camera = NULL;
+	Scene* scene = new Scene(Vector::zero());
+	Pixel * backgroud = new Pixel(0,0,0,255);
+	string fileName = "Image/spheres1.scn";//ambient_sphere
+	string outFile = "./raytracer/raytraced.bmp";
+	string line;
+	// open the file containing the scene description
+	ifstream input(fileName);
+	// check for errors in opening the file
+	if (input.fail()) {
+		cout << "Can't open file '" << fileName << "'" << endl;
+		return 0;
+	}
+	// determine the file size (this is optional -- feel free to delete the 6 lines below)
+	streampos begin, end;
+	begin = input.tellg();
+	input.seekg(0, ios::end);
+	end = input.tellg();
+	cout << "File '" << fileName << "' is: " << (end - begin) << " bytes long.\n\n";
+	input.seekg(0, ios::beg);
+	//Loop through reading each line
+	string command;
+
+	while (input >> command) { //Read first word in the line (i.e., the command type)
+
+		if (command[0] == '#') {
+			getline(input, line); //skip rest of line
+			cout << "Skipping comment: " << command << line << endl;
+			continue;
+		}
+		if (command == "film_resolution")
+		{
+			input >> Width >> Height;
+		}
+		else if (command == "camera")
+		{
+			float px, py, pz, dx, dy, dz, ux, uy, uz, ha;
+			input >> px >> py >> pz >> dx >> dy >> dz >> ux >> uy >> uz >> ha;
+			Vector aEye(px, py, pz);
+			Vector aFront(dx, dy, dz);
+			Vector aUp(ux, uy, uz);
+			camera = new Camera(aEye, aFront,aUp,ha);
+		}
+		else if (command == "sphere") 
+		{ //If the command is a sphere command
+			float x, y, z, r;
+			input >> x >> y >> z >> r;
+			Vector center(x, y, z);
+			scene->addObject(new Sphere(center,r));
+			//printf("Sphere as position (%f,%f,%f) with radius %f\n", x, y, z, r);
+		}
+		else if (command == "background") 
+		{ //If the command is a background command
+			float r, g, b;
+			input >> r >> g >> b;
+			//printf("Background color of (%f,%f,%f)\n", r, g, b);
+			backgroud->r = r;
+			backgroud->b = b;
+			backgroud->g = g;
+		}
+		else if (command == "output_image")
+		{ //If the command is an output_image command
+			
+			input >> outFile;
+			printf("Render to file named: %s\n", outFile.c_str());			
+			//did_output = true;
+		}
+		else if (command == "material")
+		{
+			float ar, ag, ab, dr, dg, db, s, sg, sb, ns, tr, tg, tb, ior;
+			input >> ar >> ag >> ab >> dr >> dg >> db >> s >> sg >> sb >> ns >> tr >> tg >> tb >> ior;
+		}
+		else if (command == "point_light")
+		{
+			float r, g, b,x, y, z;
+			input >> r >> g >> b >> x >> y >> z;
+		}
+		else if (command =="ambient_light")
+		{
+			float r, g, b;
+			input >> r >> g >> b;
+			scene->ambient_light = Vector(r, g, b);
+		}
+		else if (command =="max_depth")
+		{
+			int depth;
+			input >> depth;
+		}
+		else 
+		{
+			getline(input, line); //skip rest of line
+			cout << "WARNING. Do not know command: " << command << endl;
+		}
+	}
+	/*if (!did_output)
+	{
+		fprintf(stderr, "Warning, you didn't tell me to output anything.  I hope that's OK.\n");
+	}*/
+	/*else
+	{*/
+	if (camera == NULL)//default;
+		camera = new Camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 45);
+	img = new Image(Width, Height, backgroud);
+	CreateImage(outFile, img, camera, scene);
+	//}
+	delete img;
+	if (!ShowImage(outFile))
+	{
+		cerr << "Image error" << endl;
+		system("pause>nul");
+	}
+	return 0;
+}
 
 bool ShowImage(string outFile)
 {
@@ -57,9 +179,9 @@ bool ShowImage(string outFile)
 	}
 	string filepath = outFile;
 	my_image = SDL_LoadBMP(filepath.c_str());
-	if (my_image == NULL) 
+	if (my_image == NULL)
 	{
-		printf("Unable to load image %s! SDL Error: %s\n",outFile, SDL_GetError());
+		printf("Unable to load image %s! SDL Error: %s\n", outFile, SDL_GetError());
 		return false;
 	}
 	SDL_BlitSurface(my_image, NULL, my_screen_surface, NULL);
@@ -75,111 +197,14 @@ bool ShowImage(string outFile)
 			}
 		}
 	}
-//	system("pause>nul");
+	//	system("pause>nul");
 	SDL_FreeSurface(my_image);
 	SDL_DestroyWindow(my_window);
 	SDL_Quit();
-	return true;	
+	return true;
 }
-
-int main() {
-	string line;
-	int Width = 640;
-	int Height = 480;
-	Image *img = NULL;
-	bool did_output = false;
-	string fileName = "Image/spheres1.scn";
-	string outFile = "test.bmp";
-	// open the file containing the scene description
-	ifstream input(fileName);
-	// check for errors in opening the file
-	if (input.fail()) {
-		cout << "Can't open file '" << fileName << "'" << endl;
-		return 0;
-	}
-	// determine the file size (this is optional -- feel free to delete the 6 lines below)
-	streampos begin, end;
-	begin = input.tellg();
-	input.seekg(0, ios::end);
-	end = input.tellg();
-	cout << "File '" << fileName << "' is: " << (end - begin) << " bytes long.\n\n";
-	input.seekg(0, ios::beg);
-	//Loop through reading each line
-	string command;
-
-	while (input >> command) { //Read first word in the line (i.e., the command type)
-
-		if (command[0] == '#') {
-			getline(input, line); //skip rest of line
-			cout << "Skipping comment: " << command << line << endl;
-			continue;
-		}
-		if (command == "film_resolution")
-		{
-			input >> Width >> Height;
-		}
-		else if (command == "sphere") 
-		{ //If the command is a sphere command
-			float x, y, z, r;
-			input >> x >> y >> z >> r;
-			printf("Sphere as position (%f,%f,%f) with radius %f\n", x, y, z, r);
-		}
-		else if (command == "background") 
-		{ //If the command is a background command
-			float r, g, b;
-			input >> r >> g >> b;
-			printf("Background color of (%f,%f,%f)\n", r, g, b);
-		}
-		else if (command == "output_image")
-		{ //If the command is an output_image command
-			
-			input >> outFile;
-			printf("Render to file named: %s\n", outFile.c_str());			
-			did_output = true;
-			img = new Image(Width, Height);
-			CreateImage(outFile, img);
-		}
-		else if (command == "material")
-		{
-
-		}
-		else if (command == "point_light")
-		{
-
-		}
-		else if (command =="ambient_light")
-		{
-
-		}
-		else if (command=="background")
-		{
-
-		}
-		else if (command =="max_depth")
-		{
-
-		}
-		else 
-		{
-			getline(input, line); //skip rest of line
-			cout << "WARNING. Do not know command: " << command << endl;
-		}
-	}
-	//if (!did_output)
-	//{
-	//	fprintf(stderr, "Warning, you didn't tell me to output anything.  I hope that's OK.\n");
-	//}
-	
-	delete img;
-	if (!ShowImage(outFile))
-	{
-		cerr << "Image error" << endl;
-		system("pause>nul");
-	}
-	return 0;
-}
-
-void CreateImage(string filepath,Image *img)
+void CreateImage(string filepath,Image *img, Camera* camera, Scene* scene)
 {
+	img->Raycast(*camera, *scene);
 	img->Write(const_cast<char*>(filepath.c_str()));
 }
