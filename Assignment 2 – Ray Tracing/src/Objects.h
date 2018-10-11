@@ -1,14 +1,33 @@
 #pragma once
 #include<math.h>
 #include<iostream>
+#include<algorithm>
 #include<vector>
 #include"Vector.h"
+#include"pixel.h"
 using namespace std;
 typedef unsigned int Color;
 #define PI 3.141592653589793238462643383279502884197169399375
 
+
 class Geometry;
-class Scene;
+class Light;
+inline Pixel mulColor(Pixel color, float n)
+{
+	return Pixel(color.r*n, color.g*n, color.b*n, color.a);
+}
+//if alpha works
+//float crCalculateBlend(float a1, float a2, float c1, float c2)
+//{
+//	return (c1 * a1 * (1.0 - a2) + c2 * a2) / (a1 + a2 - a1 * a2);
+//}
+//no alpha
+inline Pixel addColor(Pixel color1, Pixel color2)
+{
+	Pixel newp;
+	newp.SetClamp(color1.r+ color2.r, color1.g + color2.g, color1.b + color2.b, color1.a);
+	return newp;
+}
 struct IntersectResult
 {
 	const Geometry* geometry;
@@ -20,19 +39,8 @@ struct IntersectResult
 	IntersectResult(const Geometry* geometry, float distance, Vector position, Vector normal) :
 		geometry(geometry), distance(distance),position(position),normal(normal) {}
 };
-struct LightSample
-{
-	Vector L;
-	float EL;
-};
- 
-class Light
-{
-public:
-	const Scene& scene;
-	Light(const Scene& aScene) :scene(aScene) {};
-	virtual LightSample sample(const Vector& position)const = 0;
-};
+
+//ray
 class Ray 
 {
 public:
@@ -42,13 +50,30 @@ public:
 
 	Vector getPoint(float t) const;
 };
-
+//material
 class Material
 {
 public:
-	float reflectiveness;
-	Material(float ref) :reflectiveness(ref) {};
-	virtual Color sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
+	Vector ambient;
+	Material(Vector amb) :ambient(amb) {};
+	virtual Pixel sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
+};
+//material using Lectnote's strategy to shade.
+class PhongMaterial :public Material
+{
+public:
+	Vector diffuse, specular;
+	Vector transmissive;
+	float ior;//index of refrection
+	float shininess;//phone cosine
+	PhongMaterial(const Vector& aDiffuse, const Vector& aSpecular, const Vector& aTransmissive,
+		const Vector& aAmbient,
+		float aShininess, 
+		float aIor)
+		:diffuse(aDiffuse), specular(aSpecular),transmissive(aTransmissive), shininess(aShininess), 
+		ior(aIor),Material(aAmbient)
+	{}
+	inline virtual Pixel sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const;
 };
 //All Objects in the scene
 class Geometry
@@ -107,4 +132,38 @@ public:
 	}
 	void addObject(Geometry* obj);
 	IntersectResult intersect(const Ray& ray)const;
+};
+
+//light
+struct LightSample
+{
+	Vector L;//direction
+	float EL;//lights intensity
+};
+class Light
+{
+public:
+	const Scene& scene;
+	Light(const Scene& aScene) :scene(aScene) {};
+	virtual LightSample sample(const Vector& position)const = 0;
+};
+class DirectionLight :public Light
+{
+public:
+	float irradiance; //intensity
+	Vector direction;//light direction vector I
+	DirectionLight(const Scene& aScene, float aIrradiance, const Vector& aDirection)
+		:irradiance(aIrradiance), direction(aDirection), Light(aScene)
+	{
+		direction = direction.normalize();
+		//the vector direction is the opposite of the transmission direction
+		direction = -1 * direction;
+	}
+	virtual LightSample sample(const Vector& position)const;
+};
+class AmbientLight :public Light
+{
+public:
+	float irradiance;
+	AmbientLight(const Scene& aScene, float aIrradiance) :irradiance(aIrradiance), Light(aScene) {}
 };

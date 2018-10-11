@@ -32,3 +32,5 @@ struct Vector
 	}
 };
 inline Vector operator*(float l, const Vector& r) { return r * l; }
+inline double max(double x, double y) { return (x >= y) ? x : y; }
+inline double min(double a, double b) { return (a <= b) ? a : b; }

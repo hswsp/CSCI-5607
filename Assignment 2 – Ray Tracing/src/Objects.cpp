@@ -5,6 +5,37 @@ Vector Ray::getPoint(float t) const
 	return origin + t * direction;
 }
 
+inline Pixel PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const
+{
+	float nDotL, nDotH;
+	Vector h, diffuseTerm, specularTerm;
+	LightSample lightSample;
+	nDotL = normal.dot(lightSample.L);
+	//Blinn-Phong
+	lightSample = light.sample(position);
+	h = lightSample.L - ray.direction;
+	h.normalize();
+	nDotH = normal.dot(h);
+	//Lambertian shading
+	diffuseTerm = diffuse * max(nDotL, 0.0);
+	specularTerm = specular * pow(max(nDotH, 0), shininess);//Blinn-Phong
+	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;
+	return Pixel(min(255, diffuseTerm.x * 255), min(255, diffuseTerm.y * 255), min(255, diffuseTerm.z * 255), 255);
+}
+
+LightSample DirectionLight::sample(const Vector& position)const
+{
+	IntersectResult shadowResult;
+	LightSample result;
+	shadowResult = scene.intersect(Ray(position, direction));
+	//add shadow terms,if ray is blocked s=0
+	if (shadowResult.geometry == NULL)
+		result.EL = irradiance;
+	else
+		result.EL = 10E-3;
+	result.L = direction;
+	return result;
+}
 
 IntersectResult Sphere:: intersect(const Ray& ray) const
 {

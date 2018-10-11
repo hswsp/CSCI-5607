@@ -1,17 +1,19 @@
 #include <iostream>
-#include "image.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
 #include<time.h>
+#include "image.h"
+#include "rendering.h"
 #define pi 3.141592653589793238462643383279502884197169399375
 using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
 /**
  * Image
  **/
-Image::Image (int width_, int height_, Pixel* background):backgroud(background){
+Image::Image (int width_, int height_, Pixel* background ,int maxdepth):backgroud(background), maxdepth(maxdepth)
+{
 
     assert(width_ > 0);
     assert(height_ > 0);
@@ -88,7 +90,7 @@ void Image::Write(char* fname){
 	}
 }
 
-void Image::Raycast(Camera camera, Scene scene) const
+void Image::Raycast(Camera camera, Scene scene)
 {
 	//Image *img = new Image(width, height);
 	float ratio = float(width) / height;
@@ -96,24 +98,25 @@ void Image::Raycast(Camera camera, Scene scene) const
 	{
 		//Vector eye;
 		Ray ray;
-		float x =1 - (i+0.5) / float(width);
+		float x = 1 - (i + 0.5) / float(width);
 		for (int j = 0; j < height; j++)
 		{
-			
-			float y =1 - (j+0.5) / float(height);
+
+			float y = 1 - (j + 0.5) / float(height);
 			ray = camera.generateRay(x, y, ratio);
-			IntersectResult hit = scene.intersect(ray);
-			//color	
-			if (hit.geometry == NULL)
-			{
-				GetPixel(i, j)=*this->backgroud;
-			}
-			else 
-			{
-				Pixel org(255, 255, 255, 255);
-				GetPixel(i, j) = org;
-			}
-				
+			//IntersectResult hit = scene.intersect(ray);
+			////color	
+			//if (hit.geometry == NULL)
+			//{
+			//	GetPixel(i, j) = *this->backgroud;
+			//}
+			//else
+			//{
+			//	Pixel org(255, 255, 255, 255);
+			//	GetPixel(i, j) = org;
+			//}
+			Pixel render = rayTraceRecursive(this, scene, ray, maxdepth);
+			GetPixel(i, j) = render;
 		}
 	}
 	return;

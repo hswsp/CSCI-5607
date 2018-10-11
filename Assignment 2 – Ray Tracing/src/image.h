@@ -1,5 +1,4 @@
-//Image.h
-
+#pragma once
 #ifndef IMAGE_INCLUDED
 #define IMAGE_INCLUDED
 
@@ -27,10 +26,6 @@ enum {
     IMAGE_CHANNEL_ALPHA,
     IMAGE_N_CHANNELS
 };
-inline double max(double x, double y)
-{
-	return (x > y) ? x : y;
-}
 
 /**
  * Image
@@ -51,12 +46,14 @@ public:
     //uint8_t *pixelData;
     int width, height, num_pixels;
     int sampling_method;
+
 	Pixel * backgroud;
+	int maxdepth;
 	//BMP* bmpImg;
 
 public:
     // Creates a blank image with the given dimensions
-	Image(int width, int height, Pixel*);
+	Image(int width, int height, Pixel* background = &Pixel(0, 0, 0, 255), int maxdepth = 5);
 
     // Copy iamage
     Image (const Image& src);
@@ -80,8 +77,7 @@ public:
 	// Make file from image
 	void Write( char *fname );
 
-    //Ray Cast
-	void Raycast(Camera camera, Scene scene) const;
-    
+    //Raycast
+	void Raycast(Camera camera, Scene scene);
 };
 #endif

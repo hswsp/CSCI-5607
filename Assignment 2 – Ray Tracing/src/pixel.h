@@ -22,6 +22,7 @@ inline Component ComponentClamp(int i)
 // Returns a random number in the range [0..255]
 Component ComponentRandom(void);
 
+#pragma once
 // Scales the component by the given factor
 Component ComponentScale(Component c, double f);
 

@@ -32,14 +32,15 @@ bool ShowImage(string outFile);
 
 int main() 
 {
-	
 	int Width = 640;
 	int Height = 480;
 	Image *img = NULL;
 	bool did_output = false;
+	PhongMaterial * material=NULL;
 	Camera* camera = NULL;
 	Scene* scene = new Scene(Vector::zero());
-	Pixel * backgroud = new Pixel(0,0,0,255);
+	Pixel * backgroud;
+	int maxdepth;
 	string fileName = "Image/spheres1.scn";//ambient_sphere
 	string outFile = "./raytracer/raytraced.bmp";
 	string line;
@@ -93,9 +94,11 @@ int main()
 			float r, g, b;
 			input >> r >> g >> b;
 			//printf("Background color of (%f,%f,%f)\n", r, g, b);
+			backgroud = new Pixel;
 			backgroud->r = r;
 			backgroud->b = b;
 			backgroud->g = g;
+			img->backgroud = backgroud;
 		}
 		else if (command == "output_image")
 		{ //If the command is an output_image command
@@ -106,8 +109,13 @@ int main()
 		}
 		else if (command == "material")
 		{
-			float ar, ag, ab, dr, dg, db, s, sg, sb, ns, tr, tg, tb, ior;
-			input >> ar >> ag >> ab >> dr >> dg >> db >> s >> sg >> sb >> ns >> tr >> tg >> tb >> ior;
+			float ar, ag, ab, dr, dg, db, sr, sg, sb, ns, tr, tg, tb, ior;
+			input >> ar >> ag >> ab >> dr >> dg >> db >> sr >> sg >> sb >> ns >> tr >> tg >> tb >> ior;
+			Vector ambient_color(ar, ag, ab);
+			Vector diffuse(dr, db, dg);
+			Vector specular(sr, sg, sb);
+			Vector transmissive_color(tr,tg,tb);
+			material = new PhongMaterial(diffuse,specular,transmissive_color,ambient_color,ns,ior);
 		}
 		else if (command == "point_light")
 		{
@@ -122,8 +130,8 @@ int main()
 		}
 		else if (command =="max_depth")
 		{
-			int depth;
-			input >> depth;
+			input >> maxdepth;
+			img->maxdepth = maxdepth;
 		}
 		else 
 		{
@@ -139,7 +147,7 @@ int main()
 	{*/
 	if (camera == NULL)//default;
 		camera = new Camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 45);
-	img = new Image(Width, Height, backgroud);
+	img = new Image(Width, Height);
 	CreateImage(outFile, img, camera, scene);
 	//}
 	delete img;
