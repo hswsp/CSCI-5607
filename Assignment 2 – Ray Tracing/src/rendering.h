@@ -12,5 +12,6 @@ public:
 	Pixel rayTraceRecursive(const Scene& scene, Ray ray);
 	Vector EvaluateRayTree(const Scene& scene, Ray ray, int maxReflect);
 	Vector ApplyLightModel(const Scene& scene, Ray ray, int maxReflect, IntersectResult* hit);
+	Vector Refract(const Scene& scene, Ray ray, IntersectResult* hit);
 };
 

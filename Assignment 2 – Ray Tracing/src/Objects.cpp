@@ -71,8 +71,9 @@ LightSample PointLight::sample(const Vector& position)const
 IntersectResult Sphere:: intersect(const Ray& ray) const
 {
 	//make sure direction vector is normalized, the |a|=1;
+	float epsino = 10E-4;
 	Vector v = ray.origin - center;//P_0-C
-	float a0 = v.sqrLength() - sqrRadius;//c
+	float a0 = v.sqrLength() - (sqrRadius+ epsino);//c
 	float DdotV = ray.direction.dot(v);//b/2
 	if (DdotV <= 0.0) //ensure t>0
 	{
