@@ -17,7 +17,7 @@ Vector Shader::EvaluateRayTree(const Scene& scene, Ray ray, int maxReflect)
 	}
 	else
 	{
-		return Vector(img->backgroud.r, img->backgroud.g, img->backgroud.b)/255.0;
+		return Vector(img->backgroud.r, img->backgroud.g, img->backgroud.b);///255.0
 	}
 }
 Vector Shader::ApplyLightModel(const Scene& scene, Ray ray, int maxReflect, IntersectResult* hit)

@@ -13,7 +13,6 @@ Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& p
 	LightSample lightSample;	
 	//Blinn-Phong
 	lightSample = light.sample(position);//Position means hit position
-	nDotL = normal.dot(lightSample.L);
 	if (lightSample.EL == Vector::zero())
 	{
 		//in the shadow
@@ -22,9 +21,16 @@ Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& p
 	h = lightSample.L - ray.direction;
 	h = h.normalize();
 	nDotH = normal.dot(h);
+	//Phong
+	Vector R = 2.0*(normal.dot(lightSample.L))*normal - lightSample.L;
+	R = R.normalize();
+	float vDotR = -1 * ray.direction.dot(R);
+	specularTerm = specular * pow(vDotR, shininess);
 	//Lambertian shading
+	nDotL = normal.dot(lightSample.L);
 	diffuseTerm = diffuse * max(nDotL, 0.0);
-	specularTerm = specular * pow(max(nDotH, 0), shininess);//Blinn-Phong
+	////Blinn-Phong
+	//specularTerm = specular * pow(max(nDotH, 0), shininess);
 	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;//  
 	return Vector(min(1, diffuseTerm.x), min(1, diffuseTerm.y), min(1, diffuseTerm.z));
 }
@@ -55,7 +61,7 @@ LightSample PointLight::sample(const Vector& position)const
 	if (shadowResult.geometry != NULL && shadowResult.distance < distance)//
 		result.EL = Vector(0.0, 0.0, 0.0);//Vector(10E-3, 10E-3, 10E-3)
 	else
-		result.EL = irradiance / (distance);//(distance*)
+		result.EL = irradiance / (distance*distance);//()
 	result.L = direction;
 	return result;
 }
@@ -71,7 +77,7 @@ LightSample PointLight::sample(const Vector& position)const
 IntersectResult Sphere:: intersect(const Ray& ray) const
 {
 	//make sure direction vector is normalized, the |a|=1;
-	float epsino = 10E-4;
+	float epsino =0.0 ; //10E-1
 	Vector v = ray.origin - center;//P_0-C
 	float a0 = v.sqrLength() - (sqrRadius+ epsino);//c
 	float DdotV = ray.direction.dot(v);//b/2

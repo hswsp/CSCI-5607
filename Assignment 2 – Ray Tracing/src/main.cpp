@@ -42,7 +42,7 @@ int main()
 	Pixel backgroud;
 	bool did_background = false;
 	Shader * render = new Shader;
-	string fileName = "Image/spheres1.scn";//ambient_sphere
+	string fileName = "Image/spheres1.scn";//ambient_sphere bear
 	string outFile = "./raytracer/raytraced.bmp";
 	string line;
 	// open the file containing the scene description
@@ -123,7 +123,7 @@ int main()
 			float r, g, b,x, y, z;
 			input >> r >> g >> b >> x >> y >> z;
 			Vector color(r, g, b);
-			color = color / 255.0;//
+			color = color;//  /255.0
 			Vector position(x, y, z);
 			scene->addLights(new PointLight(*scene,position, color));
 		}
@@ -163,12 +163,12 @@ int main()
 	}
 	CreateImage(outFile, img, camera, scene, render);
 	//}
-	delete img;
 	if (!ShowImage(outFile))
 	{
 		cerr << "Image error" << endl;
 		system("pause>nul");
 	}
+	delete img;
 	return 0;
 }
 
@@ -179,12 +179,14 @@ bool ShowImage(string outFile)
 	SDL_Surface *my_image = NULL;
 	bool gameRunning = true;
 	SDL_Event event;
+	int start = outFile.find_last_of('/', outFile.length() - 1);
+	string WinName = outFile.substr(start + 1);
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
 		return false;
 	}
 	my_window = SDL_CreateWindow(
-		"HELLO WORLD",
+		WinName.c_str(),//"HELLO WORLD"
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		640,
