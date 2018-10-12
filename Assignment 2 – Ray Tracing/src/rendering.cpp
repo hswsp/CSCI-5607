@@ -4,7 +4,7 @@
 Pixel Shader::rayTraceRecursive(const Scene& scene, Ray ray)
 {
 	Pixel p;
-	Vector color = EvaluateRayTree(scene,ray, maxdepth);
+	Vector color = EvaluateRayTree(scene,ray, maxdepth);//
 	p.SetClamp(color.x * 255, color.y * 255, color.z * 255, 255);
 	return p;
 }
@@ -13,7 +13,7 @@ Vector Shader::EvaluateRayTree(const Scene& scene, Ray ray, int maxReflect)
 	IntersectResult hit = scene.intersect(ray);
 	if (hit.geometry != NULL)
 	{
-		return ApplyLightModel(scene, ray, maxdepth, &hit);
+		return ApplyLightModel(scene, ray, maxReflect, &hit);
 	}
 	else
 	{
