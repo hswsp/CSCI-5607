@@ -55,7 +55,8 @@ class Material
 {
 public:
 	Vector ambient;
-	Material(Vector amb) :ambient(amb) {};
+	Material() {}
+	Material(const Vector& amb) :ambient(amb) {};
 	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
 };
 //material using Lectnote's strategy to shade.
@@ -66,6 +67,7 @@ public:
 	Vector transmissive;
 	float ior;//index of refrection
 	float shininess;//phone cosine
+	PhongMaterial() {}
 	PhongMaterial(const Vector& aDiffuse, const Vector& aSpecular, const Vector& aTransmissive,
 		const Vector& aAmbient,
 		float aShininess, 
@@ -80,8 +82,8 @@ class Geometry
 {
 public:
 	Material* material;
+	Geometry() {}
 	Geometry(Material* aMaterial):material(aMaterial){}
-	Geometry():material(NULL) {}
 	virtual ~Geometry()
 	{
 		delete material;
@@ -95,7 +97,9 @@ public:
 	Vector center;
 	float radius, sqrRadius;
 	Sphere() :center(Vector::VNULL()), radius(0), sqrRadius(0) {};
-	Sphere(const Vector& c, float r, Material*m = NULL):Geometry(m), center(c), radius(r), sqrRadius(r*r){}
+	Sphere(const Vector& c, float r, 
+		Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1),5,1))
+		:Geometry(m), center(c), radius(r), sqrRadius(r*r){}
 	virtual IntersectResult intersect(const Ray& ray) const;
 };
 

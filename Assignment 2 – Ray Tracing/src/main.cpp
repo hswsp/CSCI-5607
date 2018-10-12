@@ -36,13 +36,14 @@ int main()
 	int Width = 640;
 	int Height = 480;
 	Image *img = NULL;
-	PhongMaterial * material=NULL;
+	PhongMaterial *material = NULL;//new PhongMaterial
+	//bool isGetMaterial = false;
 	Camera* camera = NULL;
 	Scene* scene = new Scene;
 	Pixel backgroud;
 	bool did_background = false;
 	Shader * render = new Shader;
-	string fileName = "Image/spheres1.scn";//ambient_sphere bear
+	string fileName = "Image/bear.scn";//ambient_sphere    spheres1
 	string outFile = "./raytracer/raytraced.bmp";
 	string line;
 	// open the file containing the scene description
@@ -87,9 +88,13 @@ int main()
 			float x, y, z, r;
 			input >> x >> y >> z >> r;
 			Vector center(x, y, z);
-			scene->addObject(new Sphere(center,r, material));
+			//if (isGetMaterial)
+			scene->addObject(new Sphere(center, r, material));
+			//else
+			//	scene->addObject(new Sphere(center, r));
 			//                                                                                                                                   delete material;
 			//printf("Sphere as position (%f,%f,%f) with radius %f\n", x, y, z, r);
+			//isGetMaterial = false;
 		}
 		else if (command == "background") 
 		{ //If the command is a background command
@@ -116,7 +121,15 @@ int main()
 			Vector diffuse(dr, dg, db);
 			Vector specular(sr, sg, sb);
 			Vector transmissive_color(tr,tg,tb);
+			/*material->ambient = ambient_color;
+			material->diffuse = diffuse;
+			material->specular = specular;
+			material->transmissive = transmissive_color;
+			material->shininess = ns;
+			material->ior = ior;*/
+			//delete material;
 			material = new PhongMaterial(diffuse,specular,transmissive_color,ambient_color,ns,ior);
+			//isGetMaterial = true;
 		}
 		else if (command == "point_light")
 		{
