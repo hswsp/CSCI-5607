@@ -30,6 +30,7 @@ enum {
 /**
  * Image
  **/
+class Shader;
 class Image
 {
 public:
@@ -47,13 +48,12 @@ public:
     int width, height, num_pixels;
     int sampling_method;
 
-	Pixel * backgroud;
-	int maxdepth;
+	Pixel  backgroud;
 	//BMP* bmpImg;
 
 public:
     // Creates a blank image with the given dimensions
-	Image(int width, int height, Pixel* background = &Pixel(0, 0, 0, 255), int maxdepth = 5);
+	Image(int width, int height, Pixel background = Pixel(0, 0, 0, 255));
 
     // Copy iamage
     Image (const Image& src);
@@ -78,6 +78,6 @@ public:
 	void Write( char *fname );
 
     //Raycast
-	void Raycast(Camera camera, Scene scene);
+	void Raycast(Shader* shade,Camera camera, Scene scene);
 };
 #endif

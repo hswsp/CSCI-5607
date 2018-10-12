@@ -27,6 +27,9 @@ Vector Vector::operator-(const Vector& r) const {
 Vector Vector::operator*(float v) const {
 	return Vector(v * x, v * y, v * z);
 }
+Vector Vector::operator*(Vector v) const {
+	return Vector(v.x * x, v.y * y, v.z * z);
+}
 Vector Vector::operator/(float v) const {
 	float inv = 1 / v;
 	return *this * inv;

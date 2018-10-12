@@ -12,7 +12,7 @@ using namespace std;
 /**
  * Image
  **/
-Image::Image (int width_, int height_, Pixel* background ,int maxdepth):backgroud(background), maxdepth(maxdepth)
+Image::Image (int width_, int height_, Pixel background):backgroud(background)
 {
 
     assert(width_ > 0);
@@ -90,10 +90,11 @@ void Image::Write(char* fname){
 	}
 }
 
-void Image::Raycast(Camera camera, Scene scene)
+void Image::Raycast(Shader* shade, Camera camera, Scene scene)
 {
 	//Image *img = new Image(width, height);
 	float ratio = float(width) / height;
+	shade->img = this;
 	for (int i = 0; i < width; ++i)
 	{
 		//Vector eye;
@@ -115,7 +116,7 @@ void Image::Raycast(Camera camera, Scene scene)
 			//	Pixel org(255, 255, 255, 255);
 			//	GetPixel(i, j) = org;
 			//}
-			Pixel render = rayTraceRecursive(this, scene, ray, maxdepth);
+			Pixel render = shade->rayTraceRecursive(scene, ray);
 			GetPixel(i, j) = render;
 		}
 	}

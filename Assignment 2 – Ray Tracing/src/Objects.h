@@ -56,7 +56,7 @@ class Material
 public:
 	Vector ambient;
 	Material(Vector amb) :ambient(amb) {};
-	virtual Pixel sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
+	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
 };
 //material using Lectnote's strategy to shade.
 class PhongMaterial :public Material
@@ -73,7 +73,7 @@ public:
 		:diffuse(aDiffuse), specular(aSpecular),transmissive(aTransmissive), shininess(aShininess), 
 		ior(aIor),Material(aAmbient)
 	{}
-	inline virtual Pixel sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const;
+	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const;
 };
 //All Objects in the scene
 class Geometry
@@ -122,8 +122,9 @@ class Scene
 {
 public:
 	vector<Geometry*> objects;
+	vector<Light*> lights;
 	Vector ambient_light;
-	Scene():ambient_light(Vector::zero()){}
+	//Scene():ambient_light(Vector::zero()){}
 	Scene(Vector ambient_light=Vector(0,0,0)):ambient_light(ambient_light){}
 	~Scene()
 	{
@@ -131,6 +132,7 @@ public:
 			delete *it;
 	}
 	void addObject(Geometry* obj);
+	void addLights(Light* lit);
 	IntersectResult intersect(const Ray& ray)const;
 };
 
@@ -138,22 +140,23 @@ public:
 struct LightSample
 {
 	Vector L;//direction
-	float EL;//lights intensity
+	Vector EL;//lights intensity
 };
 class Light
 {
 public:
 	const Scene& scene;
-	Light(const Scene& aScene) :scene(aScene) {};
+	Vector  irradiance;
+	Light(const Scene& aScene,Vector aColor) :scene(aScene), irradiance(aColor) {};
 	virtual LightSample sample(const Vector& position)const = 0;
 };
 class DirectionLight :public Light
 {
 public:
-	float irradiance; //intensity
+	//float irradiance; //intensity
 	Vector direction;//light direction vector I
-	DirectionLight(const Scene& aScene, float aIrradiance, const Vector& aDirection)
-		:irradiance(aIrradiance), direction(aDirection), Light(aScene)
+	DirectionLight(const Scene& aScene, const Vector& aDirection,const Vector aColor)
+		: direction(aDirection), Light(aScene, aColor)
 	{
 		direction = direction.normalize();
 		//the vector direction is the opposite of the transmission direction
@@ -161,9 +164,21 @@ public:
 	}
 	virtual LightSample sample(const Vector& position)const;
 };
-class AmbientLight :public Light
+//class AmbientLight :public Light
+//{
+//public:
+//	//float irradiance;
+//	AmbientLight(const Scene& aScene, const Vector aColor=Vector::zero()) :
+//		Light(aScene, aColor) {}
+//	virtual LightSample sample(const Vector& position)const;
+//};
+class PointLight :public Light
 {
 public:
-	float irradiance;
-	AmbientLight(const Scene& aScene, float aIrradiance) :irradiance(aIrradiance), Light(aScene) {}
+	Vector position;
+	PointLight(const Scene& aScene, const Vector& aPosition, const Vector aColor)
+		:position(aPosition), Light(aScene, aColor)
+	{
+	}
+	virtual LightSample sample(const Vector& position)const;
 };

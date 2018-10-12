@@ -18,6 +18,7 @@ struct Vector
 	Vector operator+(const Vector& r) const;
 	Vector operator-(const Vector& r) const;
 	Vector operator*(float v) const;
+	Vector operator*(Vector v) const;
 	Vector operator/(float v) const;
 	Vector normalize() const;
 	float dot(const Vector& r) const;

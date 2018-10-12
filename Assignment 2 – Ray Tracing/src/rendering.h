@@ -1,7 +1,16 @@
 #pragma once
 #include"Objects.h"
 class Image;
-//Ray Cast 
-Pixel rayTraceRecursive(const Image* img,const Scene& scene, Ray ray, int maxReflect);
-Pixel ApplyLightModel(const Scene& scene, Ray ray, int maxReflect, IntersectResult* hit);
+
+class Shader
+{
+public:
+	int maxdepth;
+	Image* img;
+	Shader(int maxreflect = 5) :maxdepth(maxreflect) {}
+	//Ray Cast 
+	Pixel rayTraceRecursive(const Scene& scene, Ray ray);
+	Vector EvaluateRayTree(const Scene& scene, Ray ray, int maxReflect);
+	Vector ApplyLightModel(const Scene& scene, Ray ray, int maxReflect, IntersectResult* hit);
+};
 

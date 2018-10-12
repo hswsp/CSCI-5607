@@ -5,24 +5,30 @@ Vector Ray::getPoint(float t) const
 	return origin + t * direction;
 }
 
-inline Pixel PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const
+Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const
 {
+	
 	float nDotL, nDotH;
 	Vector h, diffuseTerm, specularTerm;
-	LightSample lightSample;
-	nDotL = normal.dot(lightSample.L);
+	LightSample lightSample;	
 	//Blinn-Phong
-	lightSample = light.sample(position);
+	lightSample = light.sample(position);//Position means hit position
+	nDotL = normal.dot(lightSample.L);
+	if (lightSample.EL == Vector::zero())
+	{
+		//in the shadow
+		return Vector::zero();//
+	}
 	h = lightSample.L - ray.direction;
-	h.normalize();
+	h = h.normalize();
 	nDotH = normal.dot(h);
 	//Lambertian shading
 	diffuseTerm = diffuse * max(nDotL, 0.0);
 	specularTerm = specular * pow(max(nDotH, 0), shininess);//Blinn-Phong
-	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;
-	return Pixel(min(255, diffuseTerm.x * 255), min(255, diffuseTerm.y * 255), min(255, diffuseTerm.z * 255), 255);
+	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;//  
+	return Vector(min(1, diffuseTerm.x), min(1, diffuseTerm.y), min(1, diffuseTerm.z));
 }
-
+//Different Light
 LightSample DirectionLight::sample(const Vector& position)const
 {
 	IntersectResult shadowResult;
@@ -32,10 +38,35 @@ LightSample DirectionLight::sample(const Vector& position)const
 	if (shadowResult.geometry == NULL)
 		result.EL = irradiance;
 	else
-		result.EL = 10E-3;
+		result.EL = Vector(0, 0, 0);//10E-3,10E-3,10E-3
 	result.L = direction;
 	return result;
 }
+LightSample PointLight::sample(const Vector& position)const
+{
+	//Position means hit position
+	IntersectResult shadowResult;
+	LightSample result;
+	Vector direction(this->position - position);
+	float distance = direction.length();
+	direction = direction.normalize();
+	shadowResult = scene.intersect(Ray(position, direction));
+	//add shadow terms,if ray is blocked s=0
+	if (shadowResult.geometry != NULL && shadowResult.distance < distance)//
+		result.EL = Vector(0.0, 0.0, 0.0);//Vector(10E-3, 10E-3, 10E-3)
+	else
+		result.EL = irradiance / (distance);//(distance*)
+	result.L = direction;
+	return result;
+}
+//LightSample AmbientLight::sample(const Vector& position)const
+//{
+//	IntersectResult shadowResult;
+//	LightSample result;
+//	result.EL = irradiance;
+//	result.L = Vector::zero();
+//	return result;
+//}
 
 IntersectResult Sphere:: intersect(const Ray& ray) const
 {
@@ -75,7 +106,10 @@ void Scene::addObject(Geometry* obj)
 {
 	objects.push_back(obj);
 }
-
+void Scene::addLights(Light* lit)
+{
+	lights.push_back(lit);
+}
 IntersectResult Scene::intersect(const Ray& ray)const
 {
 	IntersectResult temp, result;
