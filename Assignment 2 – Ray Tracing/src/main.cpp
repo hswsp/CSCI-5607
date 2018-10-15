@@ -17,8 +17,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION //only place once in one .cpp files
 #include "stb_image_write.h"
 
-//#define HEIGHT 600
-//#define WIDTH 600
 
 using namespace std;
 //GLuint texture;
@@ -30,8 +28,12 @@ using namespace std;
 void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene, Shader* render);
 //show in window
 bool ShowImage(string outFile);
-
-int main() 
+/**
+ * prototypes
+ **/
+static void ShowUsage(void);
+static void CheckOption(char *option, int argc, int minargc);
+int main(int argc, char* argv[])
 {
 	int Width = 640;
 	int Height = 480;
@@ -46,6 +48,31 @@ int main()
 	string fileName = "Image/bear.scn";//ambient_sphere  spheres2 
 	string outFile = "./raytracer/raytraced.bmp";
 	string line;
+	// first argument is program name
+	argv++, argc--;
+	// no argument case
+	if (argc == 0) 
+	{
+		ShowUsage();
+	}
+	// parse arguments
+	while (argc > 0)
+	{
+		if (**argv == '-')
+		{
+			if (!strcmp(*argv, "-input"))
+			{
+				CheckOption(*argv, argc, 2);
+				fileName = argv[1];
+				argv += 2, argc -= 2;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "image: invalid option: %s\n", *argv);
+			ShowUsage();
+		}
+	}
 	// open the file containing the scene description
 	ifstream input(fileName);
 	// check for errors in opening the file
@@ -62,7 +89,8 @@ int main()
 	input.seekg(0, ios::beg);
 	//Loop through reading each line
 	string command;
-
+	
+	// read input file
 	while (input >> command) { //Read first word in the line (i.e., the command type)
 
 		if (command[0] == '#') {
@@ -89,8 +117,13 @@ int main()
 			input >> x >> y >> z >> r;
 			Vector center(x, y, z);
 			//use the current stored material
-			PhongMaterial* local_material = new PhongMaterial(material);
-			scene->addObject(new Sphere(center, r, local_material));//material&
+			if(material==NULL)
+				scene->addObject(new Sphere(center, r));
+			else
+			{
+				PhongMaterial* local_material = new PhongMaterial(material);
+				scene->addObject(new Sphere(center, r, local_material));//material&
+			}
 			//else
 			//	scene->addObject(new Sphere(center, r));
 			//                                                                                                                                   delete material;
@@ -140,6 +173,15 @@ int main()
 			color = color;//  /255.0
 			Vector position(x, y, z);
 			scene->addLights(new PointLight(*scene,position, color));
+		}
+		else if (command == "directional_light")
+		{
+			float r, g, b, x, y, z;
+			input >> r >> g >> b >> x >> y >> z;
+			Vector color(r, g, b);
+			color = color;//  /255.0
+			Vector direction(x, y, z);
+			scene->addLights(new DirectionLight(*scene, direction, color));
 		}
 		else if (command =="ambient_light")
 		{
@@ -244,4 +286,25 @@ void CreateImage(string filepath,Image *img, Camera* camera, Scene* scene,Shader
 {
 	img->Raycast(render,*camera, *scene);
 	img->Write(const_cast<char*>(filepath.c_str()));
+}
+
+static char options[] =
+"-help\n"
+"-input <file>\n"
+;
+
+static void ShowUsage(void)
+{
+	fprintf(stderr, "Usage: image -input <filename> \n");
+	fprintf(stderr, "%s", options);
+	system("pause>nul");
+	exit(EXIT_FAILURE);
+}
+static void CheckOption(char *option, int argc, int minargc)
+{
+	if (argc < minargc)
+	{
+		fprintf(stderr, "Too few arguments for %s\n", option);
+		ShowUsage();
+	}
 }
