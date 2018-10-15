@@ -122,6 +122,8 @@ public:
 	{
 		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the one-half of the
 		//¡°height¡± angle of the viewing frustum
+		front = front.normalize();
+		up = up.normalize();
 		right = front.cross(refup);
 		up = right.cross(front);
 		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)

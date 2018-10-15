@@ -26,11 +26,14 @@ Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& p
 	R = R.normalize();
 	float vDotR = -1 * ray.direction.dot(R);
 	specularTerm = specular * pow(vDotR, shininess);
+
 	//Lambertian shading
 	nDotL = normal.dot(lightSample.L);
 	diffuseTerm = diffuse * max(nDotL, 0.0);
+
 	////Blinn-Phong
 	//specularTerm = specular * pow(max(nDotH, 0), shininess);
+
 	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;//  
 	return Vector(min(1, diffuseTerm.x), min(1, diffuseTerm.y), min(1, diffuseTerm.z));
 }
@@ -98,11 +101,11 @@ IntersectResult Sphere:: intersect(const Ray& ray) const
 Ray Camera::generateRay(float x, float y, float ratio)const
 {
 	Vector r, u;
-	float tranScle = ratio * fovScale;
+	float tranScle = ratio * fovScale; // 
 	//o = front - front.length()*tranScle/2*right.normalize();
 	/*r = front.length()*right.normalize()*tranScle * (x-0.5);
 	u = -(y-0.5)*front.length()*fovScale*up.normalize();*/
-	r = right * (x - 0.5)*fovScale*ratio;
+	r = right * (x - 0.5)*tranScle;
 	u = up * (y - 0.5)*fovScale;//
 	r = front + r + u;
 	r = r.normalize();

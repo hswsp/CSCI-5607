@@ -27,7 +27,7 @@ using namespace std;
 //store in file
 void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene, Shader* render);
 //show in window
-bool ShowImage(string outFile);
+bool ShowImage(string outFile, int Width, int Height);
 /**
  * prototypes
  **/
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
 	}
 	CreateImage(outFile, img, camera, scene, render);
 	//}
-	if (!ShowImage(outFile))
+	if (!ShowImage(outFile,Width,Height))
 	{
 		cerr << "Image error" << endl;
 		system("pause>nul");
@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-bool ShowImage(string outFile)
+bool ShowImage(string outFile, int Width = 640,int Height = 480)
 {
 	SDL_Window* my_window = NULL;
 	SDL_Surface* my_screen_surface = NULL;
@@ -245,8 +245,8 @@ bool ShowImage(string outFile)
 		WinName.c_str(),//"HELLO WORLD"
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		640,
-		480,
+		Width,
+		Height,
 		SDL_WINDOW_SHOWN
 	);
 	if (my_window == NULL) {
