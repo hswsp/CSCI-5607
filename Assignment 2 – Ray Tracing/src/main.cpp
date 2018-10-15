@@ -17,15 +17,15 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION //only place once in one .cpp files
 #include "stb_image_write.h"
 
-#define HEIGHT 600
-#define WIDTH 600
+//#define HEIGHT 600
+//#define WIDTH 600
 
 using namespace std;
 //GLuint texture;
-clock_t clocks;
-int frames;
-float rad;
-static Color buffer[HEIGHT][WIDTH];
+//clock_t clocks;
+//int frames;
+//float rad;
+//static Color buffer[HEIGHT][WIDTH];
 //store in file
 void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene, Shader* render);
 //show in window
@@ -43,7 +43,7 @@ int main()
 	Pixel backgroud;
 	bool did_background = false;
 	Shader * render = new Shader;
-	string fileName = "Image/bear.scn";//ambient_sphere    spheres1
+	string fileName = "Image/bear.scn";//ambient_sphere  spheres2 
 	string outFile = "./raytracer/raytraced.bmp";
 	string line;
 	// open the file containing the scene description
@@ -88,8 +88,9 @@ int main()
 			float x, y, z, r;
 			input >> x >> y >> z >> r;
 			Vector center(x, y, z);
-			//if (isGetMaterial)
-			scene->addObject(new Sphere(center, r, material));
+			//use the current stored material
+			PhongMaterial* local_material = new PhongMaterial(material);
+			scene->addObject(new Sphere(center, r, local_material));//material&
 			//else
 			//	scene->addObject(new Sphere(center, r));
 			//                                                                                                                                   delete material;

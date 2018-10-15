@@ -67,7 +67,10 @@ public:
 	Vector transmissive;
 	float ior;//index of refrection
 	float shininess;//phone cosine
-	PhongMaterial() {}
+	PhongMaterial(PhongMaterial* aPhongMaterial):
+		diffuse(aPhongMaterial->diffuse), specular(aPhongMaterial->specular),
+		transmissive(aPhongMaterial ->transmissive),ior(aPhongMaterial->ior), 
+		shininess(aPhongMaterial->shininess),Material(aPhongMaterial->ambient){}
 	PhongMaterial(const Vector& aDiffuse, const Vector& aSpecular, const Vector& aTransmissive,
 		const Vector& aAmbient,
 		float aShininess, 
@@ -83,11 +86,13 @@ class Geometry
 public:
 	Material* material;
 	Geometry() {}
-	Geometry(Material* aMaterial):material(aMaterial){}
-	virtual ~Geometry()
+	Geometry(Material* aMaterial):material(aMaterial)
 	{
-		delete material;
 	}
+	/*virtual ~Geometry()
+	{
+			delete material;
+	}*/
 	virtual IntersectResult intersect(const Ray& ray)const = 0;
 };
 
@@ -99,7 +104,10 @@ public:
 	Sphere() :center(Vector::VNULL()), radius(0), sqrRadius(0) {};
 	Sphere(const Vector& c, float r, 
 		Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1),5,1))
-		:Geometry(m), center(c), radius(r), sqrRadius(r*r){}
+		:Geometry(m), center(c), radius(r), sqrRadius(r*r)
+	{
+
+	}
 	virtual IntersectResult intersect(const Ray& ray) const;
 };
 
@@ -132,8 +140,11 @@ public:
 	Scene(Vector ambient_light=Vector(0,0,0)):ambient_light(ambient_light){}
 	~Scene()
 	{
-		for (auto it = objects.begin(); it != objects.end(); ++it)
+		int i = 0;
+		for (auto it = objects.begin(); it != objects.end(); it++,i++)
+		{
 			delete *it;
+		}
 	}
 	void addObject(Geometry* obj);
 	void addLights(Light* lit);
