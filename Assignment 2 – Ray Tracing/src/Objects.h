@@ -5,6 +5,7 @@
 #include<vector>
 #include"Vector.h"
 #include"pixel.h"
+#include <omp.h>
 using namespace std;
 typedef unsigned int Color;
 #define PI 3.141592653589793238462643383279502884197169399375
@@ -111,6 +112,68 @@ public:
 	virtual IntersectResult intersect(const Ray& ray) const;
 };
 
+enum TriType //use face normal or smooth normal
+{
+	FACE_NORMAL,
+	SMOOTH_NORMAL
+};
+class TriangleMesh
+{
+public:
+	TriType name;
+	int max_vertices;
+	int max_normals;
+	vector<Vector*> vertices; //Vertices pool
+	vector<Vector*> normals; //Normals pool
+	TriangleMesh(TriType type=FACE_NORMAL):name(type) {}
+	~TriangleMesh()
+	{
+
+		for (auto it = vertices.begin(); it != vertices.end(); it++)
+		{
+			delete *it;
+		}
+
+		for (auto it = normals.begin(); it != normals.end(); it++)
+		{
+			delete *it;
+		}
+	}
+	void IniVerticeN()
+	{
+		normals.reserve(max_normals);
+	}
+	void IniVerticeV()
+	{
+		vertices.reserve(max_vertices);
+	}
+	void addVertex(Vector *vertx);
+	void addNormal(Vector *normal);	
+};
+
+class Triangle : public Geometry
+{
+	TriType name;
+	bool raytracingIntersect(const Ray& ray,float &u,float &v,float& t, bool& IsCounterclockwise)const;
+	bool raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const;
+public:
+	TriType type;
+	Vector V0, V1, V2;// tree Vertices
+	Vector N0, N1, N2;//Tree Normal
+	Triangle() {};
+	Triangle(const Vector & v0, const Vector &v1, const Vector &v2, TriType name
+	, Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1), 5, 1))
+		:V0(v0),V1(v1),V2(v2),name(name), Geometry(m)
+	{
+	}
+	Triangle(const Vector & v0, const Vector &v1, const Vector &v2, const Vector & n0, const Vector &n1, 
+		const Vector &n2, const TriType name,
+		Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1), 5, 1))
+		:V0(v0), V1(v1), V2(v2), N0(n0), N1(n1), N2(n2), name(name),Geometry(m)
+	{
+	}
+	virtual IntersectResult intersect(const Ray& ray)const; //, Vector & uv
+};
 //viwer
 class Camera
 {
@@ -138,15 +201,16 @@ public:
 	vector<Geometry*> objects;
 	vector<Light*> lights;
 	Vector ambient_light;
+	TriangleMesh Vertices;
 	//Scene():ambient_light(Vector::zero()){}
 	Scene(Vector ambient_light=Vector(0,0,0)):ambient_light(ambient_light){}
 	~Scene()
 	{
-		int i = 0;
-		for (auto it = objects.begin(); it != objects.end(); it++,i++)
+		for (auto it = objects.begin(); it != objects.end(); it++)
 		{
 			delete *it;
 		}
+		Vertices.~TriangleMesh();
 	}
 	void addObject(Geometry* obj);
 	void addLights(Light* lit);
@@ -196,6 +260,22 @@ public:
 	PointLight(const Scene& aScene, const Vector& aPosition, const Vector aColor)
 		:position(aPosition), Light(aScene, aColor)
 	{
+	}
+	virtual LightSample sample(const Vector& position)const;
+};
+
+class SpotLight :public Light
+{
+public:
+	Vector position, Litdirection;
+	float angle1, angle2;
+	SpotLight(const Scene& aScene, const Vector& aPosition, const Vector& aDirection,
+		float ang1,float ang2, const Vector aColor)
+		:position(aPosition),Litdirection(aDirection),angle1(angle1),angle2(ang2),Light(aScene, aColor)
+	{
+		Litdirection = Litdirection.normalize();
+		//the vector direction is the opposite of the transmission direction
+		Litdirection = -1 * Litdirection;
 	}
 	virtual LightSample sample(const Vector& position)const;
 };

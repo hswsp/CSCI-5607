@@ -4,6 +4,7 @@
 #include <string.h>
 #include <float.h>
 #include<time.h>
+#include <omp.h>
 #include "image.h"
 #include "rendering.h"
 #define pi 3.141592653589793238462643383279502884197169399375
@@ -12,7 +13,7 @@ using namespace std;
 /**
  * Image
  **/
-Image::Image (int width_, int height_, Pixel background):backgroud(background)
+Image::Image (int width_, int height_, Vector background):backgroud(background)
 {
 
     assert(width_ > 0);
@@ -95,27 +96,19 @@ void Image::Raycast(Shader* shade, Camera camera, Scene scene)
 	//Image *img = new Image(width, height);
 	float ratio = float(width) / height;
 	shade->img = this;
+	const int g_ncore = omp_get_num_procs(); //Get the number of execution cores
+	omp_set_num_threads(2 * g_ncore - 1); //g_ncore
+#pragma omp parallel for
 	for (int i = 0; i < width; ++i)
 	{
 		//Vector eye;
 		Ray ray;
-		float x = 1 - (i + 0.5) / float(width);
+		float x = 1 - (i + 0.5) / float(width);  
+
 		for (int j = 0; j < height; j++)
 		{
-
 			float y = 1 - (j + 0.5) / float(height);
 			ray = camera.generateRay(x, y, ratio);
-			//IntersectResult hit = scene.intersect(ray);
-			////color	
-			//if (hit.geometry == NULL)
-			//{
-			//	GetPixel(i, j) = *this->backgroud;
-			//}
-			//else
-			//{
-			//	Pixel org(255, 255, 255, 255);
-			//	GetPixel(i, j) = org;
-			//}
 			Pixel render = shade->rayTraceRecursive(scene, ray);
 			GetPixel(i, j) = render;
 		}

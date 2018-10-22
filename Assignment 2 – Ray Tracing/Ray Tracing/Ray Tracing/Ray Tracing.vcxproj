@@ -89,9 +89,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Ray Tracing\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,9 +128,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Ray Tracing\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,9 +142,9 @@
       <AdditionalLibraryDirectories>D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Ray Tracing\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <HeapCommitSize>
       </HeapCommitSize>
-      <StackReserveSize>4000000000</StackReserveSize>
+      <StackReserveSize>500000000</StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>
-      <StackCommitSize>4000000000</StackCommitSize>
+      <StackCommitSize>500000000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

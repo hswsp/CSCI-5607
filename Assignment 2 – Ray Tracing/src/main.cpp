@@ -4,7 +4,7 @@
 #include <string>
 #include <cassert>
 #include <cstdlib>
-#include<ctime>
+#include "time.h"
 #include "SDL.h"
 #include "image.h"
 #include"rendering.h"
@@ -35,6 +35,7 @@ static void ShowUsage(void);
 static void CheckOption(char *option, int argc, int minargc);
 int main(int argc, char* argv[])
 {
+	long start = clock();// start time
 	int Width = 640;
 	int Height = 480;
 	Image *img = NULL;
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
 	//bool isGetMaterial = false;
 	Camera* camera = NULL;
 	Scene* scene = new Scene;
-	Pixel backgroud;
+	Vector backgroud;
 	bool did_background = false;
 	Shader * render = new Shader;
 	string fileName = "Image/bear.scn";//ambient_sphere  spheres2 
@@ -74,9 +75,12 @@ int main(int argc, char* argv[])
 		}
 	}
 	// open the file containing the scene description
-	ifstream input(fileName);
+	//ifstream input(fileName);
 	// check for errors in opening the file
-	if (input.fail()) {
+	fstream input;
+	input.open(fileName);
+	if (!input) 
+	{
 		cout << "Can't open file '" << fileName << "'" << endl;
 		return 0;
 	}
@@ -130,14 +134,72 @@ int main(int argc, char* argv[])
 			//printf("Sphere as position (%f,%f,%f) with radius %f\n", x, y, z, r);
 			//isGetMaterial = false;
 		}
+		else if (command=="max_normals")
+		{
+			input >> scene->Vertices.max_normals;
+		}
+		else if (command == "max_vertices")
+		{
+			input >> scene->Vertices.max_vertices;
+		}
+		else if (command == "normal")
+		{
+			float x, y, z;
+			input >> x>> y>> z;
+			scene->Vertices.addNormal(new Vector(x, y, z));
+			scene->Vertices.name = SMOOTH_NORMAL;
+			scene->Vertices.IniVerticeN();
+		}
+		else if (command == "vertex")
+		{
+			float x, y, z;
+			input >> x>> y>> z;
+			scene->Vertices.addVertex(new Vector(x, y, z));
+			scene->Vertices.IniVerticeV();
+		}
+		else if (command == "triangle")
+		{
+			int v0, v1, v2;
+			input >> v0 >> v1 >> v2;
+			assert(scene->Vertices.max_vertices > 0);
+			Vector V0 = *scene->Vertices.vertices[v0];
+			Vector V1 = *scene->Vertices.vertices[v1];
+			Vector V2 = *scene->Vertices.vertices[v2];
+			if (material == NULL)
+			{
+				if (!scene->Vertices.normals.empty())
+				{
+					Vector N0 = *scene->Vertices.normals[v0];
+					Vector N1 = *scene->Vertices.normals[v1];
+					Vector N2 = *scene->Vertices.normals[v2];
+					scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name));
+				}
+					
+				else
+					scene->addObject(new Triangle(V0, V1, V2,scene->Vertices.name));
+			}	
+			else
+			{
+				PhongMaterial* local_material = new PhongMaterial(material);
+				if (!scene->Vertices.normals.empty())
+				{
+					Vector N0 = *scene->Vertices.normals[v0];
+					Vector N1 = *scene->Vertices.normals[v1];
+					Vector N2 = *scene->Vertices.normals[v2];
+					scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name, local_material));
+				}
+				else
+					scene->addObject(new Triangle(V0, V1, V2, scene->Vertices.name, local_material));
+			}
+		}
 		else if (command == "background") 
 		{ //If the command is a background command
 			float r, g, b;
 			input >> r >> g >> b;
 			//printf("Background color of (%f,%f,%f)\n", r, g, b);
-			backgroud.r = r;
-			backgroud.b = b;
-			backgroud.g = g;
+			backgroud.x = r;
+			backgroud.y = g;
+			backgroud.z = b;
 			did_background = true;
 		}
 		else if (command == "output_image")
@@ -161,6 +223,7 @@ int main(int argc, char* argv[])
 			material->transmissive = transmissive_color;
 			material->shininess = ns;
 			material->ior = ior;*/
+
 			//delete material;
 			material = new PhongMaterial(diffuse,specular,transmissive_color,ambient_color,ns,ior);
 			//isGetMaterial = true;
@@ -191,6 +254,16 @@ int main(int argc, char* argv[])
 			/*scene->addLights(new AmbientLight(*scene,color));*/
 			scene->ambient_light = Vector(r, g, b);
 		}
+		else if (command == "spot_light")
+		{
+			float r, g, b, px, py, pz, dx, dy, dz, angle1, angle2;
+			input >> r >> g >> b >> px >> py >> pz >> dx >> dy >> dz >> angle1 >> angle2;
+			Vector color(r, g, b);
+			color = color;
+			Vector position(px, py, pz);
+			Vector direction(dx, dy, dz);
+			scene->addLights(new SpotLight(*scene, position, direction, angle1, angle2, color));
+        }
 		else if (command =="max_depth")
 		{
 			int maxdepth;
@@ -211,14 +284,20 @@ int main(int argc, char* argv[])
 	{*/
 	if (camera == NULL)//default;
 		camera = new Camera(Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), 45);
-	if(did_background)
-		img = new Image(Width, Height,backgroud);
+	if (did_background)
+	{
+		img = new Image(Width, Height, backgroud);
+	}
 	else
 	{
 		img = new Image(Width, Height);
 	}
+	render->img = img;
 	CreateImage(outFile, img, camera, scene, render);
 	//}
+	long finish = clock();//end time
+	long t = finish - start;
+	cout << "The run time is:"<<t<<"ms!\n" << endl; //show processing time
 	if (!ShowImage(outFile,Width,Height))
 	{
 		cerr << "Image error" << endl;
@@ -245,8 +324,8 @@ bool ShowImage(string outFile, int Width = 640,int Height = 480)
 		WinName.c_str(),//"HELLO WORLD"
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		Width,
-		Height,
+		Width,//640
+		Height,//480
 		SDL_WINDOW_SHOWN
 	);
 	if (my_window == NULL) {

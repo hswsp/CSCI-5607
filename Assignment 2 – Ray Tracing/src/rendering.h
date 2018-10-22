@@ -12,7 +12,7 @@ public:
 	Pixel rayTraceRecursive(const Scene& scene, Ray ray);
 	Vector EvaluateRayTree(const Scene& scene, Ray ray, int maxReflect);
 	Vector ApplyLightModel(const Scene& scene, Ray ray, int maxReflect, IntersectResult* hit);
-	Vector Refract(const Scene& scene, Ray ray, IntersectResult* hit);
+	Vector Refract(Ray ray, IntersectResult* hit);//const Scene& scene,
 	void fresnel(const Vector &I, const Vector &N, const float &ior, float &kr);
 };
 
