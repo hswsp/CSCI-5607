@@ -78,6 +78,6 @@ public:
 	void Write( char *fname );
 
     //Raycast
-	void Raycast(Shader* shade,Camera camera, Scene scene);
+	void Raycast(Shader* shade,Camera* camera, Scene scene);
 };
 #endif

@@ -41,12 +41,12 @@ Vector Shader::ApplyLightModel(const Scene& scene, Ray ray, int maxdepth, Inters
 		contribution = contribution + (Vector(1, 1, 1) - reflectiveness)*res;//
 	}
 
-	//Ray glass, refl;
-	//float kr;
-	//float fbias = 1E-4;
-	//Vector bias = fbias * hit->normal;
+	Ray glass, refl;
+	float kr;
+	float fbias = 1E-4;
+	Vector bias = fbias * hit->normal;
+	bool outside = ray.direction.dot(hit->normal) < 0;
 	////refraction
-	//bool outside = ray.direction.dot(hit->normal) < 0;
 	//glass.direction = Refract(ray, hit).normalize();//scene, 
 	//glass.origin = outside?hit->position- bias: hit->position + bias;
 	//fresnel(ray.direction, hit->normal, mat->ior, kr);
@@ -55,7 +55,7 @@ Vector Shader::ApplyLightModel(const Scene& scene, Ray ray, int maxdepth, Inters
 	//	refractionColor = EvaluateRayTree(scene, glass, maxdepth - 1);
 	//	contribution = contribution + refraction * refractionColor*(1 - kr);//
 	//}
-	////reflection
+	//reflection
 	//r = hit->normal*(-2 * hit->normal.dot(ray.direction)) + ray.direction;
 	//refl.direction = r.normalize();
 	//refl.origin = outside ? hit->position + bias : hit->position - bias;

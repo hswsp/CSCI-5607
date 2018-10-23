@@ -46,9 +46,11 @@ class Ray
 {
 public:
 	Vector origin, direction;
+	//motion blur
+	float time;
 	Ray() :origin(Vector::VNULL()),direction(Vector::VNULL()){};
 	Ray(const Vector& o, const Vector& d) : origin(o), direction(d) {}
-
+	Ray(const Vector& o, const Vector& d, float ti) :origin(o), direction(d), time(ti) {}
 	Vector getPoint(float t) const;
 };
 //material
@@ -111,7 +113,25 @@ public:
 	}
 	virtual IntersectResult intersect(const Ray& ray) const;
 };
+class moving_sphere :public Geometry
+{
+public:
+	float time0, time1;
+	Vector center0, center1;
+	float radius, sqrRadius;
+	moving_sphere():center0(Vector::VNULL()), center1(Vector::VNULL()), radius(0), sqrRadius(0) {};
+	moving_sphere(const Vector& c0, const Vector& c1, float r,float t0,float t1,
+		Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1), 5, 1))
+		:Geometry(m), center0(c0), center1(c1), radius(r), sqrRadius(r*r),time0(t0),time1(t1)
+	{
 
+	}
+	Vector Center(float time)const
+	{
+		return center0 + ((time - time0) / (time1 - time0))*(center1 - center0);
+	}
+	virtual IntersectResult intersect(const Ray& ray) const;
+};
 enum TriType //use face normal or smooth normal
 {
 	FACE_NORMAL,
@@ -180,6 +200,7 @@ class Camera
 public:
 	Vector eye, front, refup, right, up;
 	float  fov, fovScale;
+	
 	Camera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov) :eye(aEye), front(aFront),
 		refup(aUp), fov(aFov)
 	{
@@ -191,9 +212,26 @@ public:
 		up = right.cross(front);
 		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)
 	}
-	Ray generateRay(float x, float y,float ratio)const;
+	
+	virtual Ray generateRay(float x, float y,float ratio)const;
 };
-
+class MotionCamera:public Camera
+{
+public:
+	float time0, time1;//variables for shutter open/close time
+	MotionCamera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov, float t0, float t1) 
+		:Camera(aEye, aFront, aUp, aFov),time0(t0),time1(t1)
+	{
+		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the one-half of the
+		//¡°height¡± angle of the viewing frustum
+		front = front.normalize();
+		up = up.normalize();
+		right = front.cross(refup);
+		up = right.cross(front);
+		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)
+	}
+	Ray generateRay(float x, float y, float ratio)const;
+};
 //Scene
 class Scene
 {
@@ -245,14 +283,6 @@ public:
 	}
 	virtual LightSample sample(const Vector& position)const;
 };
-//class AmbientLight :public Light
-//{
-//public:
-//	//float irradiance;
-//	AmbientLight(const Scene& aScene, const Vector aColor=Vector::zero()) :
-//		Light(aScene, aColor) {}
-//	virtual LightSample sample(const Vector& position)const;
-//};
 class PointLight :public Light
 {
 public:
@@ -263,7 +293,6 @@ public:
 	}
 	virtual LightSample sample(const Vector& position)const;
 };
-
 class SpotLight :public Light
 {
 public:
@@ -271,7 +300,7 @@ public:
 	float angle1, angle2;
 	SpotLight(const Scene& aScene, const Vector& aPosition, const Vector& aDirection,
 		float ang1,float ang2, const Vector aColor)
-		:position(aPosition),Litdirection(aDirection),angle1(angle1),angle2(ang2),Light(aScene, aColor)
+		:position(aPosition),Litdirection(aDirection),angle1(ang1),angle2(ang2),Light(aScene, aColor)
 	{
 		Litdirection = Litdirection.normalize();
 		//the vector direction is the opposite of the transmission direction

@@ -1,5 +1,5 @@
 #include"Objects.h"
-
+#include<time.h>
 Vector Ray::getPoint(float t) const
 {
 	return origin + t * direction;
@@ -76,7 +76,7 @@ LightSample SpotLight::sample(const Vector& position)const
 	Vector direction(this->position - position);
 	float distance = direction.length();
 	direction = direction.normalize();
-	float current_angle =180*acos(this->Litdirection.dot(direction))/ PI;
+	double current_angle =180.f*acos(fabs(this->Litdirection.dot(direction)))/ PI;
 	shadowResult = scene.intersect(Ray(position, direction));
 	if (shadowResult.geometry != NULL && shadowResult.distance < distance)
 		result.EL = Vector::zero();
@@ -91,8 +91,8 @@ LightSample SpotLight::sample(const Vector& position)const
 		else//between angle: fall off smoothly
 		{
 			//linear
-			//result.EL = irradiance*(this->angle2-this->angle1) / ((current_angle-this->angle1)*distance*distance);
-			result.EL = irradiance/distance;
+			result.EL = irradiance*(this->angle2 - current_angle) / ((this->angle2- this->angle1)*distance*distance);
+			//result.EL = irradiance/distance;
 		}
 	}
 	result.L = direction;
@@ -131,6 +131,37 @@ IntersectResult Sphere:: intersect(const Ray& ray) const
 	}
 	return IntersectResult();
 }
+IntersectResult moving_sphere::intersect(const Ray& ray) const
+{
+	//repalce center with Center(time)
+	float epsino = 10E-3; //
+	Vector v = ray.origin - Center(ray.time);//P_0-C
+	float a0 = v.sqrLength() - (sqrRadius + epsino);//c
+	float DdotV = ray.direction.dot(v);//b/2
+	if (DdotV <= 0.0) //ensure t>0
+	{
+		float discr = DdotV * DdotV - a0;
+		if (discr >= 0.0)
+		{
+			float d1 = -DdotV - sqrt(discr);//intersection distance
+			float d2 = -DdotV + sqrt(discr);
+			if (d1 > 0)//only use the smallest t which s.t t>0
+			{
+				Vector p = ray.getPoint(d1);
+				Vector n = (p - Center(ray.time)).normalize();
+				return IntersectResult(this, d1, p, n);
+			}
+			else
+			{
+				Vector p = ray.getPoint(d2);
+				Vector n = (p - Center(ray.time)).normalize();
+				return IntersectResult(this, d2, p, n);
+			}
+
+		}
+	}
+	return IntersectResult();
+}
 
 void TriangleMesh::addVertex(Vector *vertx)
 {
@@ -140,8 +171,6 @@ void TriangleMesh::addNormal(Vector *normal)
 {
 	normals.push_back(normal);
 }
-
-
 bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v,float& t, bool& IsCounterclockwise)const
 {
 	float epsino = 1E-8;
@@ -201,32 +230,41 @@ bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v,float& t, 
 	u = v / totalArea2;
 	return true; // this ray hits the triangle 
 }
-
 bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const
 {
-	float kEpsilon = 1E-9;
+	double kEpsilon = 1E-9;
+	double Eplison = 1E-1;
 	Vector v0v1 = V1 - V0;
 	Vector v0v2 = V2 - V0;
+	//Vector N = v0v1.cross(v0v2).normalize();
+	////make sure the counter clockwise
+	//if (V0.dot(N) > 0)
+	//{
+	//	//swich E1 and E2
+	//	Vector temp = v0v1;
+	//	v0v1 = v0v2;
+	//	v0v2 = temp;
+	//}
 	Vector dir = ray.direction;
 	Vector pvec = dir.cross(v0v2);
-	float det = v0v1.dot(pvec);
-
+	double det = v0v1.dot(pvec);
 	// ray and triangle are parallel if det is close to 0
-	if (fabs(det) < kEpsilon) return false;
+	
+	if (fabs(det) < kEpsilon) return false; // if use fabs(), that is for two-side triangle
 
 	float invDet = 1 / det;
 
 	Vector tvec = ray.origin - V0;
 	u = tvec.dot(pvec) * invDet;
-	if (u < 0 || u > 1) return false;
+	if (u < 0 || u > 1.0) return false;
 
 	Vector qvec = tvec.cross(v0v1);
 	v = dir.dot(qvec) * invDet;
-	if (v < 0 || u + v > 1) return false;
+	if (v < 0 || u + v > 1.0) return false;
 
 	t = v0v2.dot(qvec) * invDet;
 
-	return (t > 0) ? true : false;
+	return (t > Eplison) ? true : false;
 }
 IntersectResult Triangle::intersect(const Ray& ray)const  //,Vector & uv
 {
@@ -309,6 +347,19 @@ Ray Camera::generateRay(float x, float y, float ratio)const
 	r = front + r + u;
 	r = r.normalize();
 	return Ray(this->eye, r);
+}
+Ray MotionCamera::generateRay(float x, float y, float ratio)const
+{
+	srand(time(0));
+	Vector r, u;
+	float tranScle = ratio * fovScale; 
+	r = right * (x - 0.5)*tranScle;
+	u = up * (y - 0.5)*fovScale;
+	r = front + r + u;
+	r = r.normalize();
+	//just add time to ray
+	float time = time0 + (rand() % 100 / (double)101) *(time1 - time0);
+	return Ray(this->eye, r, time);
 }
 
 void Scene::addObject(Geometry* obj)

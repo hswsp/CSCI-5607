@@ -42,6 +42,8 @@ int main(int argc, char* argv[])
 	PhongMaterial *material = NULL;//new PhongMaterial
 	//bool isGetMaterial = false;
 	Camera* camera = NULL;
+	float t0, t1;
+	bool isMotion = false;
 	Scene* scene = new Scene;
 	Vector backgroud;
 	bool did_background = false;
@@ -106,6 +108,11 @@ int main(int argc, char* argv[])
 		{
 			input >> Width >> Height;
 		}
+		else if (command == "shutter")
+		{
+			isMotion = true;
+			input >> t0 >> t1;
+		}
 		else if (command == "camera")
 		{
 			float px, py, pz, dx, dy, dz, ux, uy, uz, ha;
@@ -113,7 +120,14 @@ int main(int argc, char* argv[])
 			Vector aEye(px, py, pz);
 			Vector aFront(dx, dy, dz);
 			Vector aUp(ux, uy, uz);
-			camera = new Camera(aEye, aFront,aUp,ha);
+			if (isMotion)
+			{
+				camera = new MotionCamera(aEye, aFront, aUp, ha, t0, t1);
+			}
+			else
+			{
+				camera = new Camera(aEye, aFront, aUp, ha);
+			}
 		}
 		else if (command == "sphere") 
 		{ //If the command is a sphere command
@@ -121,18 +135,24 @@ int main(int argc, char* argv[])
 			input >> x >> y >> z >> r;
 			Vector center(x, y, z);
 			//use the current stored material
-			if(material==NULL)
-				scene->addObject(new Sphere(center, r));
-			else
+			if (isMotion)
 			{
 				PhongMaterial* local_material = new PhongMaterial(material);
 				scene->addObject(new Sphere(center, r, local_material));//material&
 			}
-			//else
-			//	scene->addObject(new Sphere(center, r));
-			//                                                                                                                                   delete material;
-			//printf("Sphere as position (%f,%f,%f) with radius %f\n", x, y, z, r);
-			//isGetMaterial = false;
+			else
+			{
+				if (material == NULL)
+					scene->addObject(new Sphere(center, r));
+				else
+				{
+					srand(time(0));
+					float delta = 0.5*(rand() % 100 / (double)101);
+					Vector center1 = center + Vector(0, delta, 0);
+					PhongMaterial* local_material = new PhongMaterial(material);
+					scene->addObject(new moving_sphere(center, center1, r, t0, t1, local_material));
+				}
+			}	
 		}
 		else if (command=="max_normals")
 		{
@@ -147,7 +167,6 @@ int main(int argc, char* argv[])
 			float x, y, z;
 			input >> x>> y>> z;
 			scene->Vertices.addNormal(new Vector(x, y, z));
-			scene->Vertices.name = SMOOTH_NORMAL;
 			scene->Vertices.IniVerticeN();
 		}
 		else if (command == "vertex")
@@ -159,6 +178,7 @@ int main(int argc, char* argv[])
 		}
 		else if (command == "triangle")
 		{
+			scene->Vertices.name = FACE_NORMAL;
 			int v0, v1, v2;
 			input >> v0 >> v1 >> v2;
 			assert(scene->Vertices.max_vertices > 0);
@@ -167,29 +187,38 @@ int main(int argc, char* argv[])
 			Vector V2 = *scene->Vertices.vertices[v2];
 			if (material == NULL)
 			{
-				if (!scene->Vertices.normals.empty())
-				{
-					Vector N0 = *scene->Vertices.normals[v0];
-					Vector N1 = *scene->Vertices.normals[v1];
-					Vector N2 = *scene->Vertices.normals[v2];
-					scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name));
-				}
-					
-				else
-					scene->addObject(new Triangle(V0, V1, V2,scene->Vertices.name));
+				scene->addObject(new Triangle(V0, V1, V2,scene->Vertices.name));
 			}	
 			else
 			{
 				PhongMaterial* local_material = new PhongMaterial(material);
-				if (!scene->Vertices.normals.empty())
-				{
-					Vector N0 = *scene->Vertices.normals[v0];
-					Vector N1 = *scene->Vertices.normals[v1];
-					Vector N2 = *scene->Vertices.normals[v2];
-					scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name, local_material));
-				}
-				else
-					scene->addObject(new Triangle(V0, V1, V2, scene->Vertices.name, local_material));
+				scene->addObject(new Triangle(V0, V1, V2, scene->Vertices.name, local_material));
+			}
+		}
+		else if (command=="normal_triangle")
+		{
+			scene->Vertices.name = SMOOTH_NORMAL;
+			int v0, v1, v2, n0, n1, n2;
+			input >> v0 >> v1 >> v2 >> n0 >> n1 >> n2;
+			assert(scene->Vertices.max_vertices > 0);
+			assert(scene->Vertices.max_normals > 0);
+			Vector V0 = *scene->Vertices.vertices[v0];
+			Vector V1 = *scene->Vertices.vertices[v1];
+			Vector V2 = *scene->Vertices.vertices[v2];
+			if (material == NULL)
+			{
+				Vector N0 = *scene->Vertices.normals[n0];
+				Vector N1 = *scene->Vertices.normals[n1];
+				Vector N2 = *scene->Vertices.normals[n2];
+				scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name));
+			}
+			else
+			{
+				PhongMaterial* local_material = new PhongMaterial(material);
+				Vector N0 = *scene->Vertices.normals[n0];
+				Vector N1 = *scene->Vertices.normals[n1];
+				Vector N2 = *scene->Vertices.normals[n2];
+				scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name, local_material));
 			}
 		}
 		else if (command == "background") 
@@ -233,7 +262,7 @@ int main(int argc, char* argv[])
 			float r, g, b,x, y, z;
 			input >> r >> g >> b >> x >> y >> z;
 			Vector color(r, g, b);
-			color = color;//  /255.0
+			color = color;
 			Vector position(x, y, z);
 			scene->addLights(new PointLight(*scene,position, color));
 		}
@@ -259,7 +288,6 @@ int main(int argc, char* argv[])
 			float r, g, b, px, py, pz, dx, dy, dz, angle1, angle2;
 			input >> r >> g >> b >> px >> py >> pz >> dx >> dy >> dz >> angle1 >> angle2;
 			Vector color(r, g, b);
-			color = color;
 			Vector position(px, py, pz);
 			Vector direction(dx, dy, dz);
 			scene->addLights(new SpotLight(*scene, position, direction, angle1, angle2, color));
@@ -363,7 +391,7 @@ bool ShowImage(string outFile, int Width = 640,int Height = 480)
 }
 void CreateImage(string filepath,Image *img, Camera* camera, Scene* scene,Shader* render)
 {
-	img->Raycast(render,*camera, *scene);
+	img->Raycast(render,camera, *scene);
 	img->Write(const_cast<char*>(filepath.c_str()));
 }
 

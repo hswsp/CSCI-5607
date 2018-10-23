@@ -91,14 +91,15 @@ void Image::Write(char* fname){
 	}
 }
 
-void Image::Raycast(Shader* shade, Camera camera, Scene scene)
+void Image::Raycast(Shader* shade, Camera* camera, Scene scene)
 {
 	//Image *img = new Image(width, height);
 	float ratio = float(width) / height;
 	shade->img = this;
 	const int g_ncore = omp_get_num_procs(); //Get the number of execution cores
-	omp_set_num_threads(2 * g_ncore - 1); //g_ncore
-#pragma omp parallel for
+	//cout << g_ncore << endl;
+	//omp_set_num_threads(2 * g_ncore - 1); //g_ncore
+#pragma omp parallel for schedule(dynamic,g_ncore)
 	for (int i = 0; i < width; ++i)
 	{
 		//Vector eye;
@@ -108,7 +109,7 @@ void Image::Raycast(Shader* shade, Camera camera, Scene scene)
 		for (int j = 0; j < height; j++)
 		{
 			float y = 1 - (j + 0.5) / float(height);
-			ray = camera.generateRay(x, y, ratio);
+			ray = camera->generateRay(x, y, ratio);
 			Pixel render = shade->rayTraceRecursive(scene, ray);
 			GetPixel(i, j) = render;
 		}
