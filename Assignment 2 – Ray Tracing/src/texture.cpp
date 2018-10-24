@@ -9,16 +9,19 @@ Vector checker_texture::value(float u, float v, const Vector&p)const
 }
 Vector image_texture::value(float u, float v, const Vector&p)const
 {
-	int i =( u) * nx;
-	int j = (1 - v)*ny - 1E-3;
+	int i = (1 - u) * (nx - 1);
+	int j = (1 - v)*(ny - 1) - 1E-3;
 	//clamp
 	if (i < 0) i = 0;
 	if (i > nx - 1) i = nx - 1;
 	if (j < 0)j = 0;
 	if (j > ny - 1)j = ny - 1;
-	float r = int(data[3 * i + 3 * ny*j]) / 255.0;
-	float g = int(data[3 * i + 3 * ny*j + 1]) / 255.0;
-	float b = int(data[3 * i + 3 * ny*j + 2]) / 255.0;
+	float r = int(data[4 *( i + nx*j)]) / 255.0;
+	float g = int(data[4 * (i + nx*j) + 1]) / 255.0;
+	float b = int(data[4 * (i + nx*j) + 2]) / 255.0;
+	/*float r = 0;
+	float g = v;
+	float b = 0;*/
 	return Vector(r, g, b);
 
 }

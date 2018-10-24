@@ -25,7 +25,7 @@ class checker_texture :public texture
 public:
 	texture *odd;
 	texture *even;
-	checker_texture() {};
+	checker_texture():texture(1) {};
 	checker_texture(texture *t0, texture*t1) :even(t0), odd(t1), texture(1)
 	{
 
@@ -38,7 +38,7 @@ class image_texture :public texture
 public:
 	int nx, ny;//image resolution
 	unsigned char*data;
-	image_texture() {}
+	image_texture():texture(2){}
 	image_texture(unsigned char * pixels, int a, int b) :data(pixels), nx(a), ny(b), texture(2) {}
 	virtual Vector value(float u, float v, const Vector&p)const;
 };

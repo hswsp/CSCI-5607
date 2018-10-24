@@ -35,6 +35,7 @@ static void ShowUsage(void);
 static void CheckOption(char *option, int argc, int minargc);
 int main(int argc, char* argv[])
 {
+	srand((unsigned)time(NULL));
 	long start = clock();// start time
 	int Width = 640;
 	int Height = 480;
@@ -45,7 +46,9 @@ int main(int argc, char* argv[])
 	//MotionCamera * m
 	float t0 = 0;
 	float t1 = 0;
-	bool isMotion = false;
+	bool OpenShutter = false;
+	float distance = 0;
+	bool motionball=false;
 	Scene* scene = new Scene;
 	bool useBVH = true;//false
 	Vector backgroud;
@@ -113,7 +116,7 @@ int main(int argc, char* argv[])
 		}
 		else if (command == "shutter")// make sure shutter come first
 		{
-			isMotion = true;
+			OpenShutter = true;
 			input >> t0 >> t1;
 		}
 		else if (command == "camera")
@@ -123,7 +126,7 @@ int main(int argc, char* argv[])
 			Vector aEye(px, py, pz);
 			Vector aFront(dx, dy, dz);
 			Vector aUp(ux, uy, uz);
-			if (isMotion)
+			if (OpenShutter)
 			{
 				camera = new Camera(aEye, aFront, aUp, ha, t0, t1);
 			}
@@ -132,20 +135,26 @@ int main(int argc, char* argv[])
 				camera = new Camera(aEye, aFront, aUp, ha);
 			}
 		}
+		else if (command == "motion")
+		{
+			motionball = true;
+			input >> distance;
+		}
 		else if (command == "sphere") 
 		{ //If the command is a sphere command
 			float x, y, z, r;
 			input >> x >> y >> z >> r;
 			Vector center(x, y, z);
 			//use the current stored material
-			if (isMotion)
+			if (motionball)
 			{
 				PhongMaterial* local_material = new PhongMaterial(material);
-				srand(time(0));
-				float delta = 1.0*(rand() % 100 / (double)101);
+				//srand(time(0));
+				float delta = distance *(rand() % 100 / (double)101);
 				Vector center1 = center + Vector(0, delta, 0);
 				scene->addObject(new moving_sphere(center, center1, r, t0, t1, local_material));
-				
+				motionball = false;//defalt is no motion for the next ball
+				distance = 0;
 			}
 			else
 			{
@@ -268,9 +277,9 @@ int main(int argc, char* argv[])
 			input >> ox >> oy >> oz >> ex >> ey >> ez;
 			Vector odd(ox, oy, oz);
 			Vector even(ex, ey, ez);
-			constant_texture oddtext(odd);
-			constant_texture eventext(even);
-			text = new checker_texture(&eventext, &oddtext);
+			constant_texture*  oddtext = new constant_texture(odd);
+			constant_texture* eventext = new constant_texture(even);
+			text = new checker_texture(eventext, oddtext);
 			material->addTexture(text);
         }
 		else if (command == "imagetexture")
@@ -279,7 +288,7 @@ int main(int argc, char* argv[])
 			input >> image_path;
 			int nx, ny;
 			int nn;//chanel
-			unsigned char* text_data = stbi_load(image_path.c_str(), &nx, &ny, &nn, 0);
+			unsigned char* text_data = stbi_load(image_path.c_str(), &nx, &ny, &nn, 4);//0
 			text = new image_texture(text_data, nx, ny);
 			material->addTexture(text);
         }

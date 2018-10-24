@@ -10,6 +10,7 @@
 #define pi 3.141592653589793238462643383279502884197169399375
 using namespace std;
 #define _CRT_SECURE_NO_WARNINGS
+#define THREADS 3
 /**
  * Image
  **/
@@ -95,13 +96,18 @@ void Image::Raycast(Shader* shade, Camera* camera, Scene scene)
 {
 	float ratio = float(width) / height;
 	shade->img = this;
-	const int g_ncore = omp_get_num_procs(); //Get the number of execution cores
+	//const int g_ncore = omp_get_num_procs(); //Get the number of execution cores
 	//cout << g_ncore << endl;
 	//omp_set_num_threads(2 * g_ncore - 1); //g_ncore
-#pragma omp parallel for schedule(dynamic,g_ncore)
+#pragma omp parallel for schedule(dynamic) num_threads(THREADS)
 	for (int i = 0; i < width; ++i)
 	{
-		//Vector eye;
+		//for testing
+	   /* #pragma omp critical
+		{
+			cout << "I am a thread" << omp_get_thread_num() << "/" << omp_get_num_threads() << endl;
+		}*/
+		
 		Ray ray;
 		float x = 1 - (i + 0.5) / float(width);  
 		for (int j = 0; j < height; j++)

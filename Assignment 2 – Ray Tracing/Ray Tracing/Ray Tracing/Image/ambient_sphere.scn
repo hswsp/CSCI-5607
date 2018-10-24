@@ -1,7 +1,10 @@
 #This is a sphere lit by an ambient light on a white background.
+camera  0 .2 -1 0 -.1 .9 0 1 0 26
 material 1 1 1 1 1 1 0 0 0 5 0 0 0 1
+#material .75 .75 .75 .75 .75 .75 .3 .3 .3 32 .2 .2 .2 1.5
 imagetexture Image/brick.jpg
+#checkertexture .2 .3 .1 .9 .9 .9 
 sphere 0 0 2 1
-ambient_light .9 .9 .9
-point_light 10 10 10 0 0 5
+ambient_light .1 .1 .1
+point_light 20 20 20 0 3 -5
 background 0 0 0

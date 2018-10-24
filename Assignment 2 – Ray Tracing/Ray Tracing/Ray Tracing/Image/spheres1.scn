@@ -8,11 +8,12 @@ output_image spheres1.bmp
 
 #"ground" sphere
 material .75 .75 .75 .75 .75 .75 .3 .3 .3 32 .2 .2 .2 1.5
-#imagetexture Image/life.jpg
+#imagetexture Image/brick.jpg
 sphere 0 -50 0 50
 
 #red sphere
 material 1 0 0 1 0 0 .3 .3 .3 32 .2 .2 .2 1.5
+imagetexture Image/brick.jpg
 sphere -3 1 0 .75
 
 #green sphere

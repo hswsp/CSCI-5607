@@ -8,7 +8,7 @@ Vector Ray::getPoint(float t) const
 Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const
 {
 	
-	float nDotL, nDotH;
+  	float nDotL, nDotH;
 	Vector h, diffuseTerm, specularTerm;
 	LightSample lightSample;	
 	lightSample = light.sample(position);//Position means hit position
@@ -102,7 +102,7 @@ LightSample SpotLight::sample(const Vector& position)const
 	Vector direction(this->position - position);
 	float distance = direction.length();
 	direction = direction.normalize();
-	double current_angle =180.f*acos(fabs(this->Litdirection.dot(direction)))/ PI;
+	double current_angle =180.f*acos(this->Litdirection.dot(direction))/ PI;
 	shadowResult = scene.intersect(Ray(position, direction));
 	if (shadowResult.geometry != NULL && shadowResult.distance < distance)
 		result.EL = Vector::zero();
@@ -116,8 +116,9 @@ LightSample SpotLight::sample(const Vector& position)const
 		}
 		else//between angle: fall off smoothly
 		{
+			float delta = this->angle2 - current_angle;
 			//linear
-			result.EL = irradiance*(this->angle2 - current_angle) / ((this->angle2- this->angle1)*distance*distance);
+			result.EL = irradiance*(pow(delta,0.8)) / ((this->angle2- this->angle1)*distance*distance);//
 			//result.EL = irradiance/distance;
 		}
 	}
@@ -410,8 +411,8 @@ Ray Camera::generateRay(float x, float y, float ratio)const
 	r = r.normalize();
 	if (time1 - time0 != 0)
 	{
-		srand(time(0));
-		float time = time0 + (rand() % 100 / (double)101) *(time1 - time0);
+		
+		float time = time0 + ((double)(rand() % 100) / 101.0) *(time1 - time0);
 		return Ray(this->eye, r, time);
 	}
 	else

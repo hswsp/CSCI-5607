@@ -4,18 +4,17 @@ d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(22): warning C4244: 'argument': conversion from 'float' to 'Component', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(38): warning C4305: 'initializing': truncation from 'double' to 'float'
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(284): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(106): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(109): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(112): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\image.cpp(115): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   main.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\stb_image_write.h(123): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
   d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp: note: see previous definition of '_CRT_SECURE_NO_WARNINGS'
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(22): warning C4244: 'argument': conversion from 'float' to 'Component', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(38): warning C4305: 'initializing': truncation from 'double' to 'float'
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(284): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(144): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(145): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(394): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(422): warning C4018: '<': signed/unsigned mismatch
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(153): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(403): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(431): warning C4018: '<': signed/unsigned mismatch
   Objects.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(22): warning C4244: 'argument': conversion from 'float' to 'Component', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(38): warning C4305: 'initializing': truncation from 'double' to 'float'
@@ -25,20 +24,20 @@ d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(40):
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(47): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(49): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(11): warning C4101: 'nDotH': unreferenced local variable
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(120): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(136): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(178): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(298): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(318): warning C4553: '==': result of expression not used; did you intend '='?
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(322): warning C4553: '==': result of expression not used; did you intend '='?
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(326): warning C4553: '==': result of expression not used; did you intend '='?
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(335): warning C4101: 'IsCounterclockwise': unreferenced local variable
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(407): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(119): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(121): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(137): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(179): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(299): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(319): warning C4553: '==': result of expression not used; did you intend '='?
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(323): warning C4553: '==': result of expression not used; did you intend '='?
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(327): warning C4553: '==': result of expression not used; did you intend '='?
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(336): warning C4101: 'IsCounterclockwise': unreferenced local variable
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(408): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(413): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(414): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(447): warning C4305: '=': truncation from 'double' to 'float'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(456): warning C4018: '<': signed/unsigned mismatch
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(409): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(415): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(448): warning C4305: '=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.cpp(457): warning C4018: '<': signed/unsigned mismatch
   pixel.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\pixel.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   rendering.cpp
@@ -56,10 +55,10 @@ d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(13):
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(29): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(32): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\texture.cpp(33): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Vector.cpp
   Generating code
-  All 758 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 757 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   Ray Tracing.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 2 – Ray Tracing\Ray Tracing\Release\Ray Tracing.exe
