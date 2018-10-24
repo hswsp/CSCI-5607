@@ -93,7 +93,6 @@ void Image::Write(char* fname){
 
 void Image::Raycast(Shader* shade, Camera* camera, Scene scene)
 {
-	//Image *img = new Image(width, height);
 	float ratio = float(width) / height;
 	shade->img = this;
 	const int g_ncore = omp_get_num_procs(); //Get the number of execution cores
@@ -105,7 +104,6 @@ void Image::Raycast(Shader* shade, Camera* camera, Scene scene)
 		//Vector eye;
 		Ray ray;
 		float x = 1 - (i + 0.5) / float(width);  
-
 		for (int j = 0; j < height; j++)
 		{
 			float y = 1 - (j + 0.5) / float(height);

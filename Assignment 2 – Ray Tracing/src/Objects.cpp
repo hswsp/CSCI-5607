@@ -99,8 +99,12 @@ LightSample SpotLight::sample(const Vector& position)const
 	return result;
 }
 
-
-IntersectResult Sphere:: intersect(const Ray& ray) const
+bool Sphere::bounding_box(float t0, float t1, aabb& box)const
+{
+	box = aabb(center - Vector(radius, radius, radius), center + Vector(radius, radius, radius));
+	return true;
+}
+bool  Sphere:: intersect(const Ray& ray, IntersectResult & hit) const//, float& tmin, float& tmax
 {
 	//make sure direction vector is normalized, the |a|=1;
 	float epsino = 10E-3; //
@@ -118,20 +122,31 @@ IntersectResult Sphere:: intersect(const Ray& ray) const
 			{
 				Vector p = ray.getPoint(d1);
 				Vector n = (p - center).normalize();
-				return IntersectResult(this, d1, p, n);
+				hit = IntersectResult(this, d1, p, n);
+				return true;
 			}
 			else
 			{
 				Vector p = ray.getPoint(d2);
 				Vector n = (p - center).normalize();
-				return IntersectResult(this, d2, p, n);
+				hit = IntersectResult(this, d2, p, n);
+				return true;
 			}
 			
 		}
 	}
-	return IntersectResult();
+	return false;
 }
-IntersectResult moving_sphere::intersect(const Ray& ray) const
+bool moving_sphere::bounding_box(float t0, float t1, aabb& box)const
+{
+	Vector c0 = Center(t0);
+	Vector c1 = Center(t1);
+	Vector center0 = Vector(min(c0.x, c1.x), min(c0.y, c1.y), min(c0.z, c1.z));
+	Vector center1 = Vector(max(c0.x, c1.x), max(c0.y, c1.y), max(c0.z, c1.z));
+	box = aabb(center0 - Vector(radius, radius, radius), center1 + Vector(radius, radius, radius));
+	return true;
+}
+bool  moving_sphere::intersect(const Ray& ray, IntersectResult&hit) const//, float& tmin, float& tmax
 {
 	//repalce center with Center(time)
 	float epsino = 10E-3; //
@@ -149,18 +164,20 @@ IntersectResult moving_sphere::intersect(const Ray& ray) const
 			{
 				Vector p = ray.getPoint(d1);
 				Vector n = (p - Center(ray.time)).normalize();
-				return IntersectResult(this, d1, p, n);
+				hit= IntersectResult(this, d1, p, n);
+				return true;
 			}
 			else
 			{
 				Vector p = ray.getPoint(d2);
 				Vector n = (p - Center(ray.time)).normalize();
-				return IntersectResult(this, d2, p, n);
+				hit=IntersectResult(this, d2, p, n);
+				return true;
 			}
 
 		}
 	}
-	return IntersectResult();
+	return false;
 }
 
 void TriangleMesh::addVertex(Vector *vertx)
@@ -171,65 +188,65 @@ void TriangleMesh::addNormal(Vector *normal)
 {
 	normals.push_back(normal);
 }
-bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v,float& t, bool& IsCounterclockwise)const
-{
-	float epsino = 1E-8;
-	// compute plane's normal
-	Vector v0v1 = V1 - V0;
-	Vector v0v2 = V2 - V0;
-	// no need to normalize
-	Vector N = v0v1.cross(v0v2); // N 
-	float NdotRayDirection = N.dot(ray.direction);
-	//ensure the normal is always directing to camera
-	if (NdotRayDirection > 0)
-	{
-		IsCounterclockwise = false;
-	}
-	else
-		IsCounterclockwise = true;
-	float totalArea2 = N.sqrLength();
-	// Step 1: finding P
-	// check if ray and plane are parallel ?
-	if (fabs(NdotRayDirection) < epsino) // almost 0 
-		return false; // they are parallel so they don't intersect ! 
-
-	// compute d parameter 
-	float d =  N.dot(V0);//-1 *
-
-	// compute t 
-	t = (N.dot(ray.origin) + d) / NdotRayDirection;//-1 * 
-	// check if the triangle is in behind the ray
-	if (t < 0) return false; // the triangle is behind 
-
-	// compute the intersection point using equation 1
-	Vector P = ray.getPoint(t);
-
-	// Step 2: inside-outside test
-	Vector C; // vector perpendicular to triangle's plane 
-
-	// edge 0
-	Vector edge0 = V1 - V0;
-	Vector vp0 = P - V0;
-	C = edge0.cross(vp0);
-	if (N.dot(C) < 0) return false; // P is on the right side 
-
-	// edge 1
-	Vector edge1 = V2 - V1;
-	Vector vp1 = P - V1;
-	C = edge1.cross(vp1);
-
-	if (u = N.dot(C) < 0)  return false; // P is on the right side 
-
-	// edge 2
-	Vector edge2 = V0 - V2;
-	Vector vp2 = P - V2;
-	C = edge2.cross(vp2);
-	if (v = N.dot(C) < 0) return false; // P is on the right side; 
-
-	u = u / totalArea2;
-	u = v / totalArea2;
-	return true; // this ray hits the triangle 
-}
+//bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v,float& t, bool& IsCounterclockwise)const
+//{
+//	float epsino = 1E-8;
+//	// compute plane's normal
+//	Vector v0v1 = V1 - V0;
+//	Vector v0v2 = V2 - V0;
+//	// no need to normalize
+//	Vector N = v0v1.cross(v0v2); // N 
+//	float NdotRayDirection = N.dot(ray.direction);
+//	//ensure the normal is always directing to camera
+//	if (NdotRayDirection > 0)
+//	{
+//		IsCounterclockwise = false;
+//	}
+//	else
+//		IsCounterclockwise = true;
+//	float totalArea2 = N.sqrLength();
+//	// Step 1: finding P
+//	// check if ray and plane are parallel ?
+//	if (fabs(NdotRayDirection) < epsino) // almost 0 
+//		return false; // they are parallel so they don't intersect ! 
+//
+//	// compute d parameter 
+//	float d =  N.dot(V0);//-1 *
+//
+//	// compute t 
+//	t = (N.dot(ray.origin) + d) / NdotRayDirection;//-1 * 
+//	// check if the triangle is in behind the ray
+//	if (t < 0) return false; // the triangle is behind 
+//
+//	// compute the intersection point using equation 1
+//	Vector P = ray.getPoint(t);
+//
+//	// Step 2: inside-outside test
+//	Vector C; // vector perpendicular to triangle's plane 
+//
+//	// edge 0
+//	Vector edge0 = V1 - V0;
+//	Vector vp0 = P - V0;
+//	C = edge0.cross(vp0);
+//	if (N.dot(C) < 0) return false; // P is on the right side 
+//
+//	// edge 1
+//	Vector edge1 = V2 - V1;
+//	Vector vp1 = P - V1;
+//	C = edge1.cross(vp1);
+//
+//	if (u = N.dot(C) < 0)  return false; // P is on the right side 
+//
+//	// edge 2
+//	Vector edge2 = V0 - V2;
+//	Vector vp2 = P - V2;
+//	C = edge2.cross(vp2);
+//	if (v = N.dot(C) < 0) return false; // P is on the right side; 
+//
+//	u = u / totalArea2;
+//	u = v / totalArea2;
+//	return true; // this ray hits the triangle 
+//}
 bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const
 {
 	double kEpsilon = 1E-9;
@@ -266,7 +283,25 @@ bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v, float& t)
 
 	return (t > Eplison) ? true : false;
 }
-IntersectResult Triangle::intersect(const Ray& ray)const  //,Vector & uv
+bool Triangle::bounding_box(float t0, float t1, aabb& box)const
+{
+	Vector _min, _max;
+	_min.x = min(min(V0.x, V1.x), V2.x);
+	_max.x = max(max(V0.x, V1.x), V2.x);
+	if (_max.x == _min.x)
+		_max.x == _min.x + 1E-3;
+	_min.y = min(min(V0.y, V1.y), V2.y);
+	_max.y = max(max(V0.y, V1.y), V2.y);
+	if (_max.y == _min.y)
+		_max.y == _min.y + 1E-3;
+	_min.z = min(min(V0.z, V1.z), V2.z);
+	_max.z = max(max(V0.z, V1.z), V2.z);
+	if (_max.x == _min.x)
+		_max.x == _min.x + 1E-3;
+	box = aabb(_min, _max);
+	return true;
+}
+bool  Triangle::intersect(const Ray& ray, IntersectResult& hit)const  //, float& tmin, float& tmax
 {
 	
 	float u, v, t;
@@ -327,11 +362,12 @@ IntersectResult Triangle::intersect(const Ray& ray)const  //,Vector & uv
 		{   //interpolate
 			hitNormal = uv.z * N0 + uv.x * N1 + uv.y * N2;
 		}
-		return IntersectResult(this, t, ray.getPoint(t), hitNormal.normalize()); // this ray hits the triangle 
+		hit = IntersectResult(this, t, ray.getPoint(t), hitNormal.normalize()); // this ray hits the triangle 
+		return true;
 	}
 	else
 	{
-		return IntersectResult();
+		return false;
 	}
 }
 
@@ -346,21 +382,29 @@ Ray Camera::generateRay(float x, float y, float ratio)const
 	u = up * (y - 0.5)*fovScale;//
 	r = front + r + u;
 	r = r.normalize();
-	return Ray(this->eye, r);
+	if (time1 - time0 != 0)
+	{
+		srand(time(0));
+		float time = time0 + (rand() % 100 / (double)101) *(time1 - time0);
+		return Ray(this->eye, r, time);
+	}
+	else
+		return Ray(this->eye, r);
+	
 }
-Ray MotionCamera::generateRay(float x, float y, float ratio)const
-{
-	srand(time(0));
-	Vector r, u;
-	float tranScle = ratio * fovScale; 
-	r = right * (x - 0.5)*tranScle;
-	u = up * (y - 0.5)*fovScale;
-	r = front + r + u;
-	r = r.normalize();
-	//just add time to ray
-	float time = time0 + (rand() % 100 / (double)101) *(time1 - time0);
-	return Ray(this->eye, r, time);
-}
+//Ray MotionCamera::generateRay(float x, float y, float ratio)const
+//{
+//	srand(time(0));
+//	Vector r, u;
+//	float tranScle = ratio * fovScale; 
+//	r = right * (x - 0.5)*tranScle;
+//	u = up * (y - 0.5)*fovScale;
+//	r = front + r + u;
+//	r = r.normalize();
+//	//just add time to ray
+//	float time = time0 + (rand() % 100 / (double)101) *(time1 - time0);
+//	return Ray(this->eye, r, time);
+//}
 
 void Scene::addObject(Geometry* obj)
 {
@@ -375,19 +419,170 @@ IntersectResult Scene::intersect(const Ray& ray)const
 	IntersectResult temp, result;
 	result.geometry = NULL;
 	result.distance = 1.0E30;
-	//vector<Geometry*>::const_iterator  it;
-//#pragma omp parallel for
-	for (int i = 0; i < objects.size(); ++i)
+	bool hit_anything = false;
+	if (isBVH)
 	{
-		temp = objects[i]->intersect(ray);
-	/*for (auto it =  objects.begin(); it != objects.end(); ++it)
+		hit_anything = BVH->intersect(ray, result);
+	}
+	else
 	{
-		temp = (*it)->intersect(ray);*/
-//#pragma omp critical//critical section
+		//#pragma omp parallel for
+		for (int i = 0; i < objects.size(); ++i)
 		{
-			if ((temp.geometry != NULL) && (temp.distance < result.distance))//show the lastest object
-				result = temp;
+			//temp = objects[i]->intersect(ray);
+		/*for (auto it =  objects.begin(); it != objects.end(); ++it)
+		{
+
+			temp = (*it)->intersect(ray);*/
+			//#pragma omp critical//critical section
+			{
+				if (objects[i]->intersect(ray, temp) && (temp.distance < result.distance))//show the lastest object
+					result = temp;
+			}
 		}
+		
 	}
 	return result;
+}
+
+bool aabb::hit(const Ray& ray)const//, float& tmin, float& tmax
+{
+	float tmin, tmax;
+	Vector invD(1.0f / ray.direction.x, 1.0f / ray.direction.y,1.0f / ray.direction.z);
+	Vector t0 = (_min - ray.origin)*invD;
+	Vector t1 = (_max - ray.origin)*invD;
+	if (invD.x < 0.0f)
+		std::swap(t0.x, t1.x);
+	tmin = t0.x; tmax = t1.x;
+	if (invD.y < 0.0f)
+		std::swap(t0.y, t1.y);
+	tmin = t0.y > tmin ? t0.y : tmin;
+	tmax = t1.y < tmax ? t1.y : tmax;
+	if (tmax < tmin)//no intersection
+		return false;
+	if (invD.z < 0.0f)
+		std::swap(t0.z, t1.z);
+	tmin = t0.z > tmin ? t0.z : tmin;
+	tmax = t1.z < tmax ? t1.z : tmax;
+	/*tmin = max(max(t0.x, t0.y), t0.z);
+	tmax = min(min(t1.x, t1.y), t1.z);*/
+	if (tmax < tmin)
+		return false;
+	return true;	
+}
+
+
+//constructor
+int box_x_compare(const void*a, const void* b)
+{
+	aabb box_left, box_right;
+	Geometry* ah = *(Geometry**)a;
+	Geometry* bh = *(Geometry**)b;
+	if (!ah->bounding_box(0, 0, box_left) || !bh->bounding_box(0, 0, box_right))
+		cerr << "no bounding box in the BVH_node constructor!" << endl;
+	if (box_left._min.x < box_right._min.x)
+		return -1;
+	else
+		return 1;
+}
+int box_y_compare(const void*a, const void* b)
+{
+	aabb box_left, box_right;
+	Geometry* ah = *(Geometry**)a;
+	Geometry* bh = *(Geometry**)b;
+	if (!ah->bounding_box(0, 0, box_left) || !bh->bounding_box(0, 0, box_right))
+		cerr << "no bounding box in the BVH_node constructor!" << endl;
+	if (box_left._min.y < box_right._min.y)
+		return -1;
+	else
+		return 1;
+}
+int box_z_compare(const void*a, const void* b)
+{
+	aabb box_left, box_right;
+	Geometry* ah = *(Geometry**)a;
+	Geometry* bh = *(Geometry**)b;
+	if (!ah->bounding_box(0, 0, box_left) || !bh->bounding_box(0, 0, box_right))
+		cerr << "no bounding box in the BVH_node constructor!" << endl;
+	if (box_left._min.z < box_right._min.z)
+		return -1;
+	else
+		return 1;
+}
+aabb BVH_node::surrounding_box(aabb box0, aabb box1)
+{
+	//merge box
+	Vector small(min(box0._min.x, box1._min.x), min(box0._min.y, box1._min.y), min(box0._min.z, box1._min.z));
+	Vector big(max(box0._max.x, box1._max.x), max(box0._max.y, box1._max.y), max(box0._max.z, box1._max.z));
+	return aabb(small, big);
+}
+BVH_node::BVH_node(Geometry** l, int n, float time0, float time1)
+{
+	Vector interval = box._max - box._min;
+	//split the large one
+	if (interval.x>=interval.y&&interval.x>=interval.z)
+		qsort(l, n, sizeof(Geometry*), box_x_compare);
+	else if(interval.y >= interval.x&&interval.y >= interval.z)
+		qsort(l, n, sizeof(Geometry*), box_y_compare);
+	else
+		qsort(l, n, sizeof(Geometry*), box_z_compare);
+	if (n == 1)
+		left = right = l[0];
+	else if (n == 2)
+	{
+		left = l[0];
+		right = l[1];
+	}
+	else
+	{
+		left = new BVH_node(l, n / 2, time0,time1);
+		right = new BVH_node(l + n / 2, n - n / 2, time0, time1);
+	}
+	aabb box_left, box_right;
+	if (!left->bounding_box(time0, time1, box_left) || !right->bounding_box(time0, time1, box_right))
+		cerr << "no bounding box in BVH_node contructor" << endl;
+	box = surrounding_box(box_left, box_right);
+	//for debugging
+	/*cout << box_left._min.x <<" "<< box_left._min.y << " " << box_left._min.z << endl;
+	cout << box_left._max.x << " " << box_left._max.y << " " << box_left._max.z << endl;
+	cout << box_right._min.x << " " << box_right._min.y << " " << box_right._min.z << endl;
+	cout << box_right._max.x << " " << box_right._max.y << " " << box_right._max.z << endl;*/
+}
+
+bool BVH_node::bounding_box(float t0, float t1, aabb& b)const
+{
+	b = box;
+	return true;
+}
+
+bool BVH_node::intersect(const Ray& ray, IntersectResult& hit)const//, float& tmin, float& tmax
+{
+	if (box.hit(ray))
+	{
+		IntersectResult left_Res, right_Res;
+		bool hit_left = left->intersect(ray, left_Res);
+		bool hit_right = right->intersect(ray, right_Res);
+		if (hit_left&&hit_right)
+		{
+			if (left_Res.distance < right_Res.distance)
+				hit = left_Res;
+			else
+				hit = right_Res;
+			return true;
+		}
+		else if (hit_left)
+		{
+			hit = left_Res;
+			return true;
+		}
+		else if (hit_right)
+		{
+			hit = right_Res;
+			return true;
+		}
+		else
+			return false;
+	}
+	else
+		return false;
 }

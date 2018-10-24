@@ -2,6 +2,9 @@
 camera 0 2 -10 0 -.1 .9 0 1 0 26
 output_image spheres2.bmp
 
+#motion blur
+shutter 0.0 1.0
+
 #"ground" sphere
 material .75 .75 .75 .75 .75 .75 .3 .3 .3 32 .2 .2 .2 1.5
 sphere 0 -50 0 50

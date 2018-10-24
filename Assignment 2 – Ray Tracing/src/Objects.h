@@ -1,5 +1,6 @@
 #pragma once
 #include<math.h>
+#include<stdlib.h>
 #include<iostream>
 #include<algorithm>
 #include<vector>
@@ -13,16 +14,13 @@ typedef unsigned int Color;
 
 class Geometry;
 class Light;
+class aabb;
+
 inline Pixel mulColor(Pixel color, float n)
 {
 	return Pixel(color.r*n, color.g*n, color.b*n, color.a);
 }
-//if alpha works
-//float crCalculateBlend(float a1, float a2, float c1, float c2)
-//{
-//	return (c1 * a1 * (1.0 - a2) + c2 * a2) / (a1 + a2 - a1 * a2);
-//}
-//no alpha
+
 inline Pixel addColor(Pixel color1, Pixel color2)
 {
 	Pixel newp;
@@ -39,8 +37,20 @@ struct IntersectResult
 		position(Vector::VNULL()), normal(Vector::VNULL()) {}
 	IntersectResult(const Geometry* geometry, float distance, Vector position, Vector normal) :
 		geometry(geometry), distance(distance),position(position),normal(normal) {}
+	IntersectResult& operator =(IntersectResult hit)
+	{
+		this->geometry = hit.geometry;
+		this->distance = hit.distance;
+		this->normal = hit.normal;
+		this->position = hit.position;
+		return *this;
+	}
 };
-
+//class hitable
+//{
+//public:
+//	virtual bool bounding_box(float t0, float t1, aabb&box)const = 0;
+//};
 //ray
 class Ray 
 {
@@ -49,8 +59,8 @@ public:
 	//motion blur
 	float time;
 	Ray() :origin(Vector::VNULL()),direction(Vector::VNULL()){};
-	Ray(const Vector& o, const Vector& d) : origin(o), direction(d) {}
-	Ray(const Vector& o, const Vector& d, float ti) :origin(o), direction(d), time(ti) {}
+	//Ray(const Vector& o, const Vector& d) : origin(o), direction(d) {}
+	Ray(const Vector& o, const Vector& d, float ti = 0) :origin(o), direction(d), time(ti) {}
 	Vector getPoint(float t) const;
 };
 //material
@@ -88,15 +98,17 @@ class Geometry
 {
 public:
 	Material* material;
+	bool IsPlane;
 	Geometry() {}
-	Geometry(Material* aMaterial):material(aMaterial)
+	Geometry(Material* aMaterial,bool plane=false):material(aMaterial),IsPlane(plane)
 	{
 	}
 	/*virtual ~Geometry()
 	{
 			delete material;
 	}*/
-	virtual IntersectResult intersect(const Ray& ray)const = 0;
+	virtual bool intersect(const Ray& ray,IntersectResult& hit)const = 0;//, float& tmin, float& tmax
+	virtual bool bounding_box(float t0, float t1, aabb& box )const = 0;//t0, t1 is for time
 };
 
 class Sphere : public Geometry 
@@ -111,7 +123,8 @@ public:
 	{
 
 	}
-	virtual IntersectResult intersect(const Ray& ray) const;
+	virtual bool intersect(const Ray& ray, IntersectResult& hit) const;//, float& tmin, float& tmax
+	virtual bool bounding_box(float t0, float t1, aabb& box)const;//
 };
 class moving_sphere :public Geometry
 {
@@ -130,7 +143,8 @@ public:
 	{
 		return center0 + ((time - time0) / (time1 - time0))*(center1 - center0);
 	}
-	virtual IntersectResult intersect(const Ray& ray) const;
+	virtual bool intersect(const Ray& ray, IntersectResult& hit) const;//, float& tmin, float& tmax
+	virtual bool bounding_box(float t0, float t1, aabb& box)const;
 };
 enum TriType //use face normal or smooth normal
 {
@@ -161,7 +175,7 @@ public:
 	}
 	void IniVerticeN()
 	{
-		normals.reserve(max_normals);
+		normals.reserve(max_normals);//reserve the storage
 	}
 	void IniVerticeV()
 	{
@@ -174,7 +188,7 @@ public:
 class Triangle : public Geometry
 {
 	TriType name;
-	bool raytracingIntersect(const Ray& ray,float &u,float &v,float& t, bool& IsCounterclockwise)const;
+	//bool raytracingIntersect(const Ray& ray,float &u,float &v,float& t, bool& IsCounterclockwise)const;
 	bool raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const;
 public:
 	TriType type;
@@ -183,16 +197,40 @@ public:
 	Triangle() {};
 	Triangle(const Vector & v0, const Vector &v1, const Vector &v2, TriType name
 	, Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1), 5, 1))
-		:V0(v0),V1(v1),V2(v2),name(name), Geometry(m)
+		:V0(v0),V1(v1),V2(v2),name(name), Geometry(m,true)
 	{
 	}
 	Triangle(const Vector & v0, const Vector &v1, const Vector &v2, const Vector & n0, const Vector &n1, 
 		const Vector &n2, const TriType name,
 		Material* m = new PhongMaterial(Vector(1, 1, 1), Vector(0, 0, 0), Vector(0, 0, 0), Vector(1, 1, 1), 5, 1))
-		:V0(v0), V1(v1), V2(v2), N0(n0), N1(n1), N2(n2), name(name),Geometry(m)
+		:V0(v0), V1(v1), V2(v2), N0(n0), N1(n1), N2(n2), name(name),Geometry(m,true)
 	{
 	}
-	virtual IntersectResult intersect(const Ray& ray)const; //, Vector & uv
+	virtual bool  intersect(const Ray& ray, IntersectResult& hit)const; //,  float& tmin, float& tmax
+	virtual bool bounding_box(float t0, float t1, aabb& box)const;
+};
+//BVH
+class aabb//axis-aligned bounding box
+{
+public:
+	Vector _min, _max;//box bound
+	aabb() {};
+	aabb(const Vector& a, const Vector& b) :_min(a), _max(b) {}
+	bool hit(const Ray& ray)const;//,float& tmin, float& tmax
+
+};
+
+class BVH_node :public Geometry
+{
+	aabb surrounding_box(aabb box0, aabb box1);//add two box
+public:
+	aabb box;
+	Geometry* left;
+	Geometry* right;
+	BVH_node() {}
+	BVH_node(Geometry** l, int n, float time0, float time1);
+	virtual  bool intersect(const Ray& ray, IntersectResult& hit)const;//, float& tmin, float& tmax
+	virtual bool bounding_box(float t0, float t1, aabb& b)const;
 };
 //viwer
 class Camera
@@ -200,27 +238,9 @@ class Camera
 public:
 	Vector eye, front, refup, right, up;
 	float  fov, fovScale;
-	
-	Camera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov) :eye(aEye), front(aFront),
-		refup(aUp), fov(aFov)
-	{
-		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the one-half of the
-		//¡°height¡± angle of the viewing frustum
-		front = front.normalize();
-		up = up.normalize();
-		right = front.cross(refup);
-		up = right.cross(front);
-		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)
-	}
-	
-	virtual Ray generateRay(float x, float y,float ratio)const;
-};
-class MotionCamera:public Camera
-{
-public:
 	float time0, time1;//variables for shutter open/close time
-	MotionCamera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov, float t0, float t1) 
-		:Camera(aEye, aFront, aUp, aFov),time0(t0),time1(t1)
+	Camera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov,float t0=0,float t1=0) :eye(aEye), front(aFront),
+		refup(aUp), fov(aFov), time0(t0), time1(t1)
 	{
 		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the one-half of the
 		//¡°height¡± angle of the viewing frustum
@@ -230,18 +250,39 @@ public:
 		up = right.cross(front);
 		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)
 	}
-	Ray generateRay(float x, float y, float ratio)const;
+    Ray generateRay(float x, float y,float ratio)const;
 };
+//class MotionCamera:public Camera
+//{
+//public:
+//	float time0, time1;//variables for shutter open/close time
+//	MotionCamera(const Vector& aEye, const Vector& aFront, const Vector& aUp, float aFov, float t0, float t1) 
+//		:Camera(aEye, aFront, aUp, aFov),time0(t0),time1(t1)
+//	{
+//		//aEye is the POSITION;aFront is the DIRECTION; aUp is UP vector; aFov is the one-half of the
+//		//¡°height¡± angle of the viewing frustum
+//		front = front.normalize();
+//		up = up.normalize();
+//		right = front.cross(refup);
+//		up = right.cross(front);
+//		fovScale = 2 * tan(fov*1.0*PI / 180);//compute 2ta(aFov)
+//	}
+//	Ray generateRay(float x, float y, float ratio)const;
+//};
 //Scene
 class Scene
 {
 public:
 	vector<Geometry*> objects;
+	Geometry** obj;//for BVH
 	vector<Light*> lights;
 	Vector ambient_light;
 	TriangleMesh Vertices;
-	//Scene():ambient_light(Vector::zero()){}
-	Scene(Vector ambient_light=Vector(0,0,0)):ambient_light(ambient_light){}
+	BVH_node* BVH;
+	bool isBVH;
+	Scene(Vector ambient_light=Vector(0,0,0), bool isbvh=false):
+		ambient_light(ambient_light),isBVH(isbvh)
+	{}
 	~Scene()
 	{
 		for (auto it = objects.begin(); it != objects.end(); it++)
@@ -249,6 +290,7 @@ public:
 			delete *it;
 		}
 		Vertices.~TriangleMesh();
+		delete[] obj;
 	}
 	void addObject(Geometry* obj);
 	void addLights(Light* lit);
@@ -308,3 +350,4 @@ public:
 	}
 	virtual LightSample sample(const Vector& position)const;
 };
+

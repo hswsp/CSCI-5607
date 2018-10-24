@@ -46,21 +46,26 @@ Vector Shader::ApplyLightModel(const Scene& scene, Ray ray, int maxdepth, Inters
 	float fbias = 1E-4;
 	Vector bias = fbias * hit->normal;
 	bool outside = ray.direction.dot(hit->normal) < 0;
-	////refraction
-	//glass.direction = Refract(ray, hit).normalize();//scene, 
-	//glass.origin = outside?hit->position- bias: hit->position + bias;
-	//fresnel(ray.direction, hit->normal, mat->ior, kr);
-	//if (kr < 1)//&& glass.direction != Vector::zero()
-	//{
-	//	refractionColor = EvaluateRayTree(scene, glass, maxdepth - 1);
-	//	contribution = contribution + refraction * refractionColor*(1 - kr);//
-	//}
+	
+	if (!hit->geometry->IsPlane)
+	{//refraction
+		glass.direction = Refract(ray, hit).normalize();//scene, 
+		glass.origin = outside ? hit->position - bias : hit->position + bias;
+		glass.time = ray.time;
+		fresnel(ray.direction, hit->normal, mat->ior, kr);
+		if (kr < 1)//&& glass.direction != Vector::zero()
+		{
+			refractionColor = EvaluateRayTree(scene, glass, maxdepth - 1);
+			contribution = contribution + refraction * refractionColor*(1 - kr);//
+		}
+	}
 	//reflection
-	//r = hit->normal*(-2 * hit->normal.dot(ray.direction)) + ray.direction;
-	//refl.direction = r.normalize();
-	//refl.origin = outside ? hit->position + bias : hit->position - bias;
-	//reflectedColor = EvaluateRayTree(scene, refl, maxdepth - 1);
-	//contribution = contribution + reflectiveness * reflectedColor ;//* kr
+	r = hit->normal*(-2 * hit->normal.dot(ray.direction)) + ray.direction;
+	refl.direction = r.normalize();
+	refl.origin = outside ? hit->position + bias : hit->position - bias;
+	refl.time = ray.time;
+	reflectedColor = EvaluateRayTree(scene, refl, maxdepth - 1);
+	contribution = contribution + reflectiveness * reflectedColor ;//* kr
 
 		//Ray refr, refl;
 		//// compute refraction if it is not a case of total internal reflection

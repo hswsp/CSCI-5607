@@ -25,7 +25,7 @@ using namespace std;
 //float rad;
 //static Color buffer[HEIGHT][WIDTH];
 //store in file
-void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene, Shader* render);
+void CreateImage(string filepath, Image *img, Camera* camera, Scene* scene, Shader* render, bool useBVH, float t0, float t1);
 //show in window
 bool ShowImage(string outFile, int Width, int Height);
 /**
@@ -42,9 +42,12 @@ int main(int argc, char* argv[])
 	PhongMaterial *material = NULL;//new PhongMaterial
 	//bool isGetMaterial = false;
 	Camera* camera = NULL;
-	float t0, t1;
+	//MotionCamera * m
+	float t0 = 0;
+	float t1 = 0;
 	bool isMotion = false;
 	Scene* scene = new Scene;
+	bool useBVH = true;//false
 	Vector backgroud;
 	bool did_background = false;
 	Shader * render = new Shader;
@@ -108,7 +111,7 @@ int main(int argc, char* argv[])
 		{
 			input >> Width >> Height;
 		}
-		else if (command == "shutter")
+		else if (command == "shutter")// make sure shutter come first
 		{
 			isMotion = true;
 			input >> t0 >> t1;
@@ -122,7 +125,7 @@ int main(int argc, char* argv[])
 			Vector aUp(ux, uy, uz);
 			if (isMotion)
 			{
-				camera = new MotionCamera(aEye, aFront, aUp, ha, t0, t1);
+				camera = new Camera(aEye, aFront, aUp, ha, t0, t1);
 			}
 			else
 			{
@@ -138,7 +141,11 @@ int main(int argc, char* argv[])
 			if (isMotion)
 			{
 				PhongMaterial* local_material = new PhongMaterial(material);
-				scene->addObject(new Sphere(center, r, local_material));//material&
+				srand(time(0));
+				float delta = 1.0*(rand() % 100 / (double)101);
+				Vector center1 = center + Vector(0, delta, 0);
+				scene->addObject(new moving_sphere(center, center1, r, t0, t1, local_material));
+				
 			}
 			else
 			{
@@ -146,11 +153,8 @@ int main(int argc, char* argv[])
 					scene->addObject(new Sphere(center, r));
 				else
 				{
-					srand(time(0));
-					float delta = 0.5*(rand() % 100 / (double)101);
-					Vector center1 = center + Vector(0, delta, 0);
 					PhongMaterial* local_material = new PhongMaterial(material);
-					scene->addObject(new moving_sphere(center, center1, r, t0, t1, local_material));
+					scene->addObject(new Sphere(center, r, local_material));//material&
 				}
 			}	
 		}
@@ -321,7 +325,7 @@ int main(int argc, char* argv[])
 		img = new Image(Width, Height);
 	}
 	render->img = img;
-	CreateImage(outFile, img, camera, scene, render);
+	CreateImage(outFile, img, camera, scene, render, useBVH, t0, t1);
 	//}
 	long finish = clock();//end time
 	long t = finish - start;
@@ -389,8 +393,18 @@ bool ShowImage(string outFile, int Width = 640,int Height = 480)
 	SDL_Quit();
 	return true;
 }
-void CreateImage(string filepath,Image *img, Camera* camera, Scene* scene,Shader* render)
+void CreateImage(string filepath,Image *img, Camera* camera, Scene* scene,Shader* render, bool isBVH,float t0,float t1)
 {
+	scene->isBVH = isBVH;
+	if (isBVH)
+	{
+		scene->obj = new Geometry*[scene->objects.size()];
+		for (int i = 0; i < scene->objects.size(); ++i)
+		{
+			scene->obj[i] = scene->objects[i];
+		}
+		scene->BVH = new BVH_node(scene->obj, scene->objects.size(), t0, t1);
+	}
 	img->Raycast(render,camera, *scene);
 	img->Write(const_cast<char*>(filepath.c_str()));
 }
