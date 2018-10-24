@@ -17,10 +17,25 @@ Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& p
 		//in the shadow
 		return Vector::zero();//
 	}
-	//Blinn-Phong
-	/*h = lightSample.L - ray.direction;
-	h = h.normalize();
-	nDotH = normal.dot(h);*/
+	if (text != NULL)
+	{
+		Vector Color;
+		if(text->type==1)
+			Color = lightSample.EL * text->value(0, 0, position);
+		else if (text->type == 2)
+		{
+			float u, v;
+			get_sphere_uv(normal, u, v);
+			Color = lightSample.EL * text->value(u, v, normal);
+		}
+		return Vector(min(1, Color.x), min(1, Color.y), min(1, Color.z));
+	}
+	////Blinn-Phong
+	//h = lightSample.L - ray.direction;
+	//h = h.normalize();
+	//nDotH = normal.dot(h);
+	//specularTerm = specular * pow(max(nDotH, 0), shininess);
+
 	//Phong
 	Vector R = 2.0*(normal.dot(lightSample.L))*normal - lightSample.L;
 	R = R.normalize();
@@ -30,13 +45,24 @@ Vector PhongMaterial::sample(const Light& light, const Ray& ray, const Vector& p
 	//Lambertian shading
 	nDotL = normal.dot(lightSample.L);
 	diffuseTerm = diffuse * max(nDotL, 0.0);
-
-	////Blinn-Phong
-	//specularTerm = specular * pow(max(nDotH, 0), shininess);
-
-	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;//  
+	diffuseTerm = (diffuseTerm + specularTerm)*lightSample.EL;
 	return Vector(min(1, diffuseTerm.x), min(1, diffuseTerm.y), min(1, diffuseTerm.z));
 }
+//Vector TextureMaterial::sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const
+//{
+//	LightSample lightSample;
+//	Vector Color;
+//	lightSample = light.sample(position);//Position means hit position
+//	if (lightSample.EL == Vector::zero())
+//	{
+//		//in the shadow
+//		return Vector::zero();//
+//	}
+//	//texture
+//	if (this->text != NULL)
+//		Color = lightSample.EL * text->value(0, 0, position);
+//	return Vector(min(1, Color.x), min(1, Color.y), min(1, Color.z));
+//};
 //Different Light
 LightSample DirectionLight::sample(const Vector& position)const
 {
@@ -249,8 +275,8 @@ void TriangleMesh::addNormal(Vector *normal)
 //}
 bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const
 {
-	double kEpsilon = 1E-9;
-	double Eplison = 1E-1;
+	double kEpsilon = 1E-9;//0
+	double Eplison = 1E-6;
 	Vector v0v1 = V1 - V0;
 	Vector v0v2 = V2 - V0;
 	//Vector N = v0v1.cross(v0v2).normalize();

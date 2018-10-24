@@ -4,9 +4,10 @@
 #include<iostream>
 #include<algorithm>
 #include<vector>
+#include <omp.h>
 #include"Vector.h"
 #include"pixel.h"
-#include <omp.h>
+#include"texture.h"
 using namespace std;
 typedef unsigned int Color;
 #define PI 3.141592653589793238462643383279502884197169399375
@@ -69,13 +70,14 @@ class Material
 public:
 	Vector ambient;
 	Material() {}
-	Material(const Vector& amb) :ambient(amb) {};
+	Material(const Vector& amb) :ambient(amb){};
 	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const = 0;
 };
 //material using Lectnote's strategy to shade.
 class PhongMaterial :public Material
 {
 public:
+	texture* text;
 	Vector diffuse, specular;
 	Vector transmissive;
 	float ior;//index of refrection
@@ -83,7 +85,7 @@ public:
 	PhongMaterial(PhongMaterial* aPhongMaterial):
 		diffuse(aPhongMaterial->diffuse), specular(aPhongMaterial->specular),
 		transmissive(aPhongMaterial ->transmissive),ior(aPhongMaterial->ior), 
-		shininess(aPhongMaterial->shininess),Material(aPhongMaterial->ambient){}
+		shininess(aPhongMaterial->shininess), text(aPhongMaterial->text),Material(aPhongMaterial->ambient){}
 	PhongMaterial(const Vector& aDiffuse, const Vector& aSpecular, const Vector& aTransmissive,
 		const Vector& aAmbient,
 		float aShininess, 
@@ -91,8 +93,39 @@ public:
 		:diffuse(aDiffuse), specular(aSpecular),transmissive(aTransmissive), shininess(aShininess), 
 		ior(aIor),Material(aAmbient)
 	{}
+	void addTexture(texture* checktext)
+	{
+		text = checktext;
+	}
 	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const;
+	
 };
+//class TextureMaterial :public Material
+//{
+//public:
+//	texture* text;
+//	Vector diffuse, specular;
+//	Vector transmissive;
+//	float ior;//index of refrection
+//	float shininess;//phone cosine
+//	TextureMaterial() {}
+//	TextureMaterial(TextureMaterial* aPhongMaterial) :text(aPhongMaterial->text),
+//		diffuse(aPhongMaterial->diffuse), specular(aPhongMaterial->specular),
+//		transmissive(aPhongMaterial ->transmissive), ior(aPhongMaterial->ior),
+//		shininess(aPhongMaterial->shininess), Material(aPhongMaterial->ambient) {}
+//	TextureMaterial(const Vector& aDiffuse, const Vector& aSpecular, const Vector& aTransmissive,
+//		const Vector& aAmbient,
+//		float aShininess,
+//		float aIor, texture* text=NULL)
+//		:text(text),diffuse(aDiffuse), specular(aSpecular), transmissive(aTransmissive), shininess(aShininess),
+//		ior(aIor), Material(aAmbient) {}
+//
+//	void addTexture(texture* checktext)
+//	{
+//		text = checktext;
+//	}
+//	virtual Vector sample(const Light& light, const Ray& ray, const Vector& position, const Vector& normal)const;
+//};
 //All Objects in the scene
 class Geometry
 {

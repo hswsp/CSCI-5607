@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
 	int Width = 640;
 	int Height = 480;
 	Image *img = NULL;
-	PhongMaterial *material = NULL;//new PhongMaterial
-	//bool isGetMaterial = false;
+	PhongMaterial *material = NULL;//new Material
+	texture * text = NULL;
 	Camera* camera = NULL;
 	//MotionCamera * m
 	float t0 = 0;
@@ -151,12 +151,18 @@ int main(int argc, char* argv[])
 			{
 				if (material == NULL)
 					scene->addObject(new Sphere(center, r));
+				/*else if (text != NULL)
+				{
+					TextureMaterial* textm = new TextureMaterial(static_cast<TextureMaterial*>(material));
+					textm->addTexture(text);
+					scene->addObject(new Sphere(center, r, textm));
+				}*/
 				else
 				{
 					PhongMaterial* local_material = new PhongMaterial(material);
 					scene->addObject(new Sphere(center, r, local_material));//material&
 				}
-			}	
+			}
 		}
 		else if (command=="max_normals")
 		{
@@ -224,6 +230,8 @@ int main(int argc, char* argv[])
 				Vector N2 = *scene->Vertices.normals[n2];
 				scene->addObject(new Triangle(V0, V1, V2, N0, N1, N2, scene->Vertices.name, local_material));
 			}
+			
+
 		}
 		else if (command == "background") 
 		{ //If the command is a background command
@@ -250,17 +258,31 @@ int main(int argc, char* argv[])
 			Vector diffuse(dr, dg, db);
 			Vector specular(sr, sg, sb);
 			Vector transmissive_color(tr,tg,tb);
-			/*material->ambient = ambient_color;
-			material->diffuse = diffuse;
-			material->specular = specular;
-			material->transmissive = transmissive_color;
-			material->shininess = ns;
-			material->ior = ior;*/
-
 			//delete material;
 			material = new PhongMaterial(diffuse,specular,transmissive_color,ambient_color,ns,ior);
-			//isGetMaterial = true;
 		}
+		else if (command == "checkertexture")
+		{
+			float ox, oy, oz, ex, ey, ez;
+			//tree for even , three for odd
+			input >> ox >> oy >> oz >> ex >> ey >> ez;
+			Vector odd(ox, oy, oz);
+			Vector even(ex, ey, ez);
+			constant_texture oddtext(odd);
+			constant_texture eventext(even);
+			text = new checker_texture(&eventext, &oddtext);
+			material->addTexture(text);
+        }
+		else if (command == "imagetexture")
+		{
+			string image_path;
+			input >> image_path;
+			int nx, ny;
+			int nn;//chanel
+			unsigned char* text_data = stbi_load(image_path.c_str(), &nx, &ny, &nn, 0);
+			text = new image_texture(text_data, nx, ny);
+			material->addTexture(text);
+        }
 		else if (command == "point_light")
 		{
 			float r, g, b,x, y, z;
@@ -283,8 +305,6 @@ int main(int argc, char* argv[])
 		{
 			float r, g, b;
 			input >> r >> g >> b;
-			//Vector color(r, g, b);
-			/*scene->addLights(new AmbientLight(*scene,color));*/
 			scene->ambient_light = Vector(r, g, b);
 		}
 		else if (command == "spot_light")

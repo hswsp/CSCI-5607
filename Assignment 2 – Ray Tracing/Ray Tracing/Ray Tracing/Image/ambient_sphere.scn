@@ -1,5 +1,7 @@
 #This is a sphere lit by an ambient light on a white background.
 material 1 1 1 1 1 1 0 0 0 5 0 0 0 1
+imagetexture Image/brick.jpg
 sphere 0 0 2 1
-ambient_light .1 .1 .1
-background 1 1 1
+ambient_light .9 .9 .9
+point_light 10 10 10 0 0 5
+background 0 0 0

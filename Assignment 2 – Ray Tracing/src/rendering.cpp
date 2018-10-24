@@ -43,7 +43,7 @@ Vector Shader::ApplyLightModel(const Scene& scene, Ray ray, int maxdepth, Inters
 
 	Ray glass, refl;
 	float kr;
-	float fbias = 1E-4;
+	float fbias = 1E-8;
 	Vector bias = fbias * hit->normal;
 	bool outside = ray.direction.dot(hit->normal) < 0;
 	

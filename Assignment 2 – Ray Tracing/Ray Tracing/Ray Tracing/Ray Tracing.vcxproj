@@ -173,6 +173,7 @@
     <ClInclude Include="..\..\src\rendering.h" />
     <ClInclude Include="..\..\src\stb_image.h" />
     <ClInclude Include="..\..\src\stb_image_write.h" />
+    <ClInclude Include="..\..\src\texture.h" />
     <ClInclude Include="..\..\src\Vector.h" />
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +182,7 @@
     <ClCompile Include="..\..\src\Objects.cpp" />
     <ClCompile Include="..\..\src\pixel.cpp" />
     <ClCompile Include="..\..\src\rendering.cpp" />
+    <ClCompile Include="..\..\src\texture.cpp" />
     <ClCompile Include="..\..\src\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
