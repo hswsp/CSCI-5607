@@ -277,7 +277,7 @@ void TriangleMesh::addNormal(Vector *normal)
 bool Triangle::raytracingIntersect(const Ray& ray, float &u, float &v, float& t)const
 {
 	double kEpsilon = 1E-9;//0
-	double Eplison = 1E-6;
+	double Eplison = 1E-3;
 	Vector v0v1 = V1 - V0;
 	Vector v0v2 = V2 - V0;
 	//Vector N = v0v1.cross(v0v2).normalize();

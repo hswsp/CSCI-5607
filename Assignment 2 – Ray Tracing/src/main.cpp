@@ -176,24 +176,26 @@ int main(int argc, char* argv[])
 		else if (command=="max_normals")
 		{
 			input >> scene->Vertices.max_normals;
+			scene->Vertices.IniVerticeN();
 		}
 		else if (command == "max_vertices")
 		{
 			input >> scene->Vertices.max_vertices;
+			scene->Vertices.IniVerticeV();
 		}
 		else if (command == "normal")
 		{
 			float x, y, z;
 			input >> x>> y>> z;
 			scene->Vertices.addNormal(new Vector(x, y, z));
-			scene->Vertices.IniVerticeN();
+			
 		}
 		else if (command == "vertex")
 		{
 			float x, y, z;
 			input >> x>> y>> z;
 			scene->Vertices.addVertex(new Vector(x, y, z));
-			scene->Vertices.IniVerticeV();
+			
 		}
 		else if (command == "triangle")
 		{

@@ -13,8 +13,8 @@ d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(22): w
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(38): warning C4305: 'initializing': truncation from 'double' to 'float'
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(284): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(153): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(403): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
-d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(431): warning C4018: '<': signed/unsigned mismatch
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(405): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
+d:\github_repository\csci-5607\assignment 2 – ray tracing\src\main.cpp(433): warning C4018: '<': signed/unsigned mismatch
   Objects.cpp
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(22): warning C4244: 'argument': conversion from 'float' to 'Component', possible loss of data
 d:\github_repository\csci-5607\assignment 2 – ray tracing\src\objects.h(38): warning C4305: 'initializing': truncation from 'double' to 'float'
