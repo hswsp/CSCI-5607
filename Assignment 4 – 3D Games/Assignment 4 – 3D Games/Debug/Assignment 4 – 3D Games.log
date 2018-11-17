@@ -1,0 +1,26 @@
+﻿  pch.cpp
+  Games.cpp
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(269): warning C4305: '-=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(270): warning C4305: '+=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(274): warning C4305: '+=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(275): warning C4305: '-=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(280): warning C4305: '-=': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(285): warning C4305: '+=': truncation from 'double' to 'float'
+  Model.cpp
+  GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: rotate_slow function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: perspectiveFov function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: infinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: tweakedInfinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: roll function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: pitch function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: yaw function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: angle function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: angleAxis function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  Texture.cpp
+  shader.cpp
+  Generating Code...
+  glad.c
+  Assignment 4 – 3D Games.vcxproj -> D:\Github_repository\CSCI-5607\Assignment 4 – 3D Games\Debug\Assignment 4 – 3D Games.exe
