@@ -1,6 +1,7 @@
 #include"Model.h"
 
 using namespace std;
+
 void Model::LoadModel(const char* modelpath,int k)
 {
 	assert(k < this->modelNum);
@@ -8,26 +9,27 @@ void Model::LoadModel(const char* modelpath,int k)
 	modelFile.open(modelpath);
 	int numLines = 0;
 	modelFile >> numLines;
-	this->vertices[k] = new float[numLines];
+	this->obj[k]->vertices = new float[numLines];
 	for (int i = 0; i < numLines; i++) {
-		modelFile >> this->vertices[k][i];
+		modelFile >> this->obj[k]->vertices[i];
 	}
 	printf("%d\n", numLines);
-	this->vertexCount[k] = numLines / 8;
+	this->obj[k]->vertexCount = numLines / 8;
+	this->totalNumVerts+= numLines / 8;
 	modelFile.close();
 }
 
 void Model::UploadMeshData(GLuint& vao, GLuint vbo[3])
 {
-	int totalNumVerts = 0;
+	/*int totalNumVerts = 0;
 	for (int i = 0; i < this->modelNum; ++i)
-		totalNumVerts += this->vertexCount[i];
+		totalNumVerts += this->vertexCount[i];*/
 	float* modelData = new float[totalNumVerts * 8];
 	int startModeli = 0;
 	for (int i = 0; i < this->modelNum; ++i)
 	{
-		copy(this->vertices[i], this->vertices[i] + this->vertexCount[i] * 8, modelData+ startModeli*8);
-		startModeli += this->vertexCount[i];
+		copy(this->obj[i]->vertices, this->obj[i]->vertices + this->obj[i]->vertexCount * 8, modelData+ startModeli*8);
+		startModeli += this->obj[i]->vertexCount;
 	}
 	
 	// Build a Vertex Array Object(VAO) to store mapping of shader attributse to VBO
@@ -78,22 +80,22 @@ void Model::LoadModel(glm::mat4 view, glm::mat4 proj)
 	for (int i = 0; i < this->modelNum; ++i)
 	{
 		//only have 2 now
-		if (this->texture[i]->textureUnit == 0)
+		if (this->obj[i]->texture->textureUnit == 0)
 		{
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, this->texture[i]->id);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex0"), 0);
 		}
-		else if (this->texture[i]->textureUnit == 1)
+		else if (this->obj[i]->texture->textureUnit == 1)
 		{
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, this->texture[i]->id);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex1"), 1);
 		}
 	}
 	glBindVertexArray(vaoId);
 }
-void Model::DrawModel(int k)
+void Model::DrawModel(int k, Camera camera, bool IsScale)
 {
 	float colR = 1, colG = 1, colB = 1;
 	GLint uniColor = glGetUniformLocation(texturedShader, "inColor");
@@ -104,26 +106,24 @@ void Model::DrawModel(int k)
 
 	GLint uniModel = glGetUniformLocation(texturedShader, "model");
 
-	//************
-	//Draw model #2 once
-	//This model is stored in the VBO starting a offest model2_start and with model2_numVerts num of verticies
-	//*************
-
-	//Translate the model (matrix) based on where objx/y/z is
-	// ... these variables are set when the user presses the arrow keys
 	glm::mat4 model;
 	model = glm::mat4();
-	model = glm::scale(model, glm::vec3(.8f, .8f, .8f)); //scale this model
-	model = glm::translate(model, glm::vec3(objx, objy, objz));
+	// cube need scale
+	if(IsScale)
+		model = glm::scale(model, glm::vec3(.2f, 1.8f, 1.8f)); //scale this model
+	model = glm::translate(model, glm::vec3(this->obj[k]->objx, this->obj[k]->objy, this->obj[k]->objz));
 
 	//Set which texture to use (1 = brick texture ... bound to GL_TEXTURE1)
-	glUniform1i(uniTexID,this->texture[k]->textureUnit);
+	glUniform1i(uniTexID,this->obj[k]->texture->textureUnit);
 	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
-
+	//View
+	GLint uniView = glGetUniformLocation(texturedShader, "view");
+	glm::mat4 matModelview = camera.getWorldToViewMatrix();//glm::lookAt(camera.position, camera.target, camera.up)
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(matModelview));
 	//Draw an instance of the model (at the position & orientation specified by the model matrix above)
 	int model_start = 0;
 	for (int i = 0; i < k; ++i)
-		model_start += this->vertexCount[i];
-	glDrawArrays(GL_TRIANGLES, model_start, this->vertexCount[k]); //(Primitive Type, Start Vertex, Num Verticies)
+		model_start += this->obj[i]->vertexCount;
+	glDrawArrays(GL_TRIANGLES, model_start, this->obj[k]->vertexCount); //(Primitive Type, Start Vertex, Num Verticies)
 	
 }

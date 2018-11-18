@@ -376,7 +376,6 @@ int main(void)
     //--------------------------------------------------------------------------------------
     UnloadModel(modelMap);         // Unload model data (includes texture unloading)
     UnloadModel(modelTower);         // Unload model data (includes texture unloading)
-
     CloseWindow();
     //--------------------------------------------------------------------------------------
     

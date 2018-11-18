@@ -27,11 +27,13 @@ const char* INSTRUCTIONS =
 #include"Texture.h"
 #include"shader.h"
 #include"Model.h"
+#include"Camera.h"
 #include <stdarg.h>             // Required for TraceLog()
 #include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include<math.h>
 #define   PI 3.141592653
 using namespace std;
 const int screenWidth = 800;
@@ -77,17 +79,7 @@ struct Rectangle {
 };
 
 // Camera type, defines a camera position/orientation in 3d space
-struct Camera 
-{
-	glm::vec3 position;       // Camera position
-	glm::vec3 target;         // Camera target it looks-at
-	glm::vec3 up;             // Camera up vector (rotation over its axis)
-	float fovy;             // Camera field-of-view apperture in Y (degrees)
-	Camera() {};
-	Camera(glm::vec3 Aposition, glm::vec3 Atarget, glm::vec3 Aup, float Afovy) :
-		position(Aposition), target(Atarget),up(Aup),fovy(Afovy)
-	{}
-} ;
+
 
 typedef enum { LOG_INFO = 0, LOG_ERROR, LOG_WARNING, LOG_DEBUG, LOG_OTHER } TraceLogType;
 
@@ -115,7 +107,7 @@ static double targetTime = 0.0;             // Desired time for one frame, if 0 
 
 //callback functions to be registered: Error, Key, MouseButton, MouseCursor
 static void ErrorCallback(int error, const char* description);
-static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit,Model& model);
+static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit,Model& model,Camera& camera);
 static void MouseButtonCallback(SDL_Window *window, int button, int action, int mods);
 static void MouseCursorPosCallback(SDL_Window *window, double x, double y);
 void TraceLog(int msgType, const char *text, ...);      // Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
@@ -145,11 +137,11 @@ int main(int argc, char *argv[])
 	InitGraphicsDevice(screenWidth, screenHeight);  // Initialize graphic device (OpenGL)
 
 	// Define our camera
-	Camera camera;
-	camera.position = glm::vec3(3.f,1.0f,1.0f);
+	Camera camera(glm::vec3(3.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f),45.0f);
+	/*camera.position = glm::vec3(3.f,0.0f,0.0f);
 	camera.target = glm::vec3(0.0f,0.0f,0.0f);
 	camera.up = glm::vec3(0.0f, 0.0f, 1.0f );
-	camera.fovy = 45.0f;
+	camera.fovy = 45.0f;*/
 
 	
 
@@ -170,19 +162,23 @@ int main(int argc, char *argv[])
 
 	GLuint texturedShader = textshader.InitShader("textured-Vertex.glsl", "textured-Fragment.glsl");
 	//load model
-	Model model(2);
-	model.texture[0] = new Texture2D(texture1);
-	model.texture[1] = new Texture2D(texture2);
-	model.LoadModel("models/knot.txt",0);//cube
+	Model model(3);
+	/*model.texture[0] = new Texture2D(texture1);
+	model.texture[1] = new Texture2D(texture2);*/
+	model.obj[0] =new Object(texture1);
+	model.LoadModel("models/teapot.txt",0);
 	
-	model.LoadModel("models/teapot.txt",1);
+	model.obj[1] =new Object(texture2);
+	model.LoadModel("models/cube.txt",1);//cube
+
 	model.texturedShader = texturedShader;
 	GLuint vao = 0;
 	GLuint vbo[3] = { 0 };
 	model.UploadMeshData(vao, vbo);
 
-	/*Model teapot(texture1);
-	teapot.LoadModel("models/teapot.txt");
+	/*Model teapot(1);
+	teapot.texture[0]=new Texture2D(texture1);
+	teapot.LoadModel("models/teapot.txt",0);
 	teapot.texturedShader = texturedShader;
 	GLuint teapotvao = 0;
 	GLuint teapotvbo[3] = { 0 };
@@ -197,7 +193,7 @@ int main(int argc, char *argv[])
 	{
 		// Update
 		//----------------------------------------------------------------------------------
-		KeyCallback(window, windowEvent, quit, model);                   // Register input events (keyboard, mouse)
+		KeyCallback(window, windowEvent, quit, model,camera);                   // Register input events (keyboard, mouse)
 		// Clear the screen to default color
 		glClearColor(.2f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -211,8 +207,9 @@ int main(int argc, char *argv[])
 		//----------------------------------------------------------------------------------
 
 		// Draw
-		model.DrawModel(0);
-		model.DrawModel(1);
+		model.DrawModel(0, camera,false);
+		model.DrawModel(1, camera,true);
+		//teapot.DrawModel(0);
 		//----------------------------------------------------------------------------------
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);         // Clear used buffers: Color and Depth (Depth is used for 3D)
 		// TODO: Draw on the screen
@@ -244,9 +241,14 @@ static void ErrorCallback(int error, const char* description)
 }
 
 // GLFW3: Keyboard callback function
-static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& model)
+static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& model, Camera& camera)
 {
 	bool fullscreen = false;
+	glm::vec4 m_direction(camera.viewDirection.x, camera.viewDirection.y, camera.viewDirection.z, 1.0f);
+	glm::vec4 m_up(camera.up.x, camera.up.y, camera.up.z, 1.0f);
+	glm::mat4 rot;
+	glm::vec3 pitchAxis = glm::cross(camera.viewDirection,camera.up);
+	float m_speed = 0.1;
 	while (SDL_PollEvent(&windowEvent)) 
 	{  //inspect all events in the queue
 		switch (windowEvent.type)
@@ -264,26 +266,75 @@ static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, 
 			}
 			break;
 		case SDL_KEYDOWN:
-			if (windowEvent.key.keysym.sym == SDLK_UP)
+			switch (windowEvent.key.keysym.sym)
 			{
-				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.objx -= .1; //Is shift pressed?
-				else model.objz += .1;
+			case  SDLK_UP:
+				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx -= .1; //Is shift pressed?
+				else model.obj[0]->objz += .1;
+				break;
+			case SDLK_DOWN:
+				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx += .1; //Is shift pressed?
+				else model.obj[0]->objz -= .1;
+				break;
+			case SDLK_LEFT:
+				//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_LEFT)  //If "up key" is pressed
+				model.obj[0]->objy -= .1;
+				break;
+			case SDLK_RIGHT:
+				//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_RIGHT)  //If "down key" is pressed
+				model.obj[0]->objy += .1;
+				break;
+			case SDLK_a:
+				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(camera.up));
+				m_direction = rot * m_direction;
+				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
+				camera.target = camera.position + camera.viewDirection;
+					break;
+			case SDLK_d:
+				rot = glm::rotate(rot, -1.f * m_speed, glm::normalize(camera.up));
+				m_direction = rot * m_direction;
+				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
+				camera.target = camera.position + camera.viewDirection;
+				break;
+			case SDLK_w:
+				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(pitchAxis));
+				m_direction = rot * m_direction;
+				m_up = rot * m_up;
+				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
+				camera.up= glm::vec3(m_up.x, m_up.y, m_up.z);
+				camera.target = camera.position + camera.viewDirection;
+				break;
+			case SDLK_s:
+				rot = glm::rotate(rot, -1.f * m_speed, glm::normalize(pitchAxis));
+				m_direction = rot * m_direction;
+				m_up = rot * m_up;
+				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
+				camera.up = glm::vec3(m_up.x, m_up.y, m_up.z);
+				camera.target = camera.position + camera.viewDirection;
+				break;
+			default:
+				break;
 			}
-			else if (windowEvent.key.keysym.sym == SDLK_DOWN)
-			{
-				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.objx += .1; //Is shift pressed?
-				else model.objz -= .1;
-			}
-			else if (windowEvent.key.keysym.sym == SDLK_LEFT)
-			{
-				if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_LEFT)  //If "up key" is pressed
-					model.objy -= .1;
-			}
-			else if (windowEvent.key.keysym.sym == SDLK_RIGHT)
-			{
-				if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_RIGHT)  //If "down key" is pressed
-					model.objy += .1;
-			}
+			//if (windowEvent.key.keysym.sym == SDLK_UP)
+			//{
+			//	if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx -= .1; //Is shift pressed?
+			//	else model.obj[0]->objz += .1;
+			//}
+			//else if (windowEvent.key.keysym.sym == SDLK_DOWN)
+			//{
+			//	if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx += .1; //Is shift pressed?
+			//	else model.obj[0]->objz -= .1;
+			//}
+			//else if (windowEvent.key.keysym.sym == SDLK_LEFT)
+			//{
+			//	if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_LEFT)  //If "up key" is pressed
+			//		model.obj[0]->objy -= .1;
+			//}
+			//else if (windowEvent.key.keysym.sym == SDLK_RIGHT)
+			//{
+			//	if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_RIGHT)  //If "down key" is pressed
+			//		model.obj[0]->objy += .1;
+			//}
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			if (SDL_BUTTON_LEFT == windowEvent.button.button)
