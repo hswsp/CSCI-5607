@@ -2,21 +2,36 @@
 
 using namespace std;
 
-void Model::LoadModel(const char* modelpath,int k)
+void Object::UploadPosition(glm::vec3 position)
 {
-	assert(k < this->modelNum);
+	this->objx = float(position.x);
+	this->objy = float(position.y);
+	this->objz = float(position.z);
+}
+
+
+void Model::InitModel(const int AtotalNumModels)
+{
+	//obj = new Object*[modelNum];
+	totalNumVerts = 0;
+	obj.reserve(AtotalNumModels);
+}
+void Model::ImportModel(const char* modelpath, Object* objects)//int k
+{
+	//assert(k < this->modelNum);
 	ifstream modelFile;
 	modelFile.open(modelpath);
 	int numLines = 0;
 	modelFile >> numLines;
-	this->obj[k]->vertices = new float[numLines];
+	objects->vertices = new float[numLines];//this->obj[k]
 	for (int i = 0; i < numLines; i++) {
-		modelFile >> this->obj[k]->vertices[i];
+		modelFile >> objects->vertices[i];//this->obj[k]
 	}
-	printf("%d\n", numLines);
-	this->obj[k]->vertexCount = numLines / 8;
+	//printf("%d\n", numLines);
+	objects->vertexCount = numLines / 8;//this->obj[k]
 	this->totalNumVerts+= numLines / 8;
 	modelFile.close();
+	this->obj.push_back(objects);
 }
 
 void Model::UploadMeshData(GLuint& vao, GLuint vbo[3])
@@ -26,10 +41,11 @@ void Model::UploadMeshData(GLuint& vao, GLuint vbo[3])
 		totalNumVerts += this->vertexCount[i];*/
 	float* modelData = new float[totalNumVerts * 8];
 	int startModeli = 0;
-	for (int i = 0; i < this->modelNum; ++i)
+	for (vector<Object *>::iterator it = obj.begin(); it != obj.end(); ++it)//int i = 0; i < this->obj.size
 	{
-		copy(this->obj[i]->vertices, this->obj[i]->vertices + this->obj[i]->vertexCount * 8, modelData+ startModeli*8);
-		startModeli += this->obj[i]->vertexCount;
+		//this->obj[i]
+		copy((*it)->vertices, (*it)->vertices + (*it)->vertexCount * 8, modelData+ startModeli*8);
+		startModeli += (*it)->vertexCount;
 	}
 	
 	// Build a Vertex Array Object(VAO) to store mapping of shader attributse to VBO
@@ -77,7 +93,7 @@ void Model::LoadModel(glm::mat4 view, glm::mat4 proj)
 {
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
-	for (int i = 0; i < this->modelNum; ++i)
+	for (int i = 0; i < this->obj.size(); ++i)
 	{
 		//only have 2 now
 		if (this->obj[i]->texture->textureUnit == 0)
@@ -92,10 +108,22 @@ void Model::LoadModel(glm::mat4 view, glm::mat4 proj)
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex1"), 1);
 		}
+		if (this->obj[i]->texture->textureUnit == 2)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
+			glUniform1i(glGetUniformLocation(texturedShader, "tex2"), 2);
+		}
+		else if (this->obj[i]->texture->textureUnit == 3)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
+			glUniform1i(glGetUniformLocation(texturedShader, "tex3"), 3);
+		}
 	}
 	glBindVertexArray(vaoId);
 }
-void Model::DrawModel(int k, Camera camera, bool IsScale)
+void Model::DrawModel(int k, Camera camera, glm::vec3 scale) //bool IsScale
 {
 	float colR = 1, colG = 1, colB = 1;
 	GLint uniColor = glGetUniformLocation(texturedShader, "inColor");
@@ -109,8 +137,7 @@ void Model::DrawModel(int k, Camera camera, bool IsScale)
 	glm::mat4 model;
 	model = glm::mat4();
 	// cube need scale
-	if(IsScale)
-		model = glm::scale(model, glm::vec3(.2f, 1.8f, 1.8f)); //scale this model
+	model = glm::scale(model, scale); //scale this model glm::vec3 (.2f, 1.8f, 1.8f)
 	model = glm::translate(model, glm::vec3(this->obj[k]->objx, this->obj[k]->objy, this->obj[k]->objz));
 
 	//Set which texture to use (1 = brick texture ... bound to GL_TEXTURE1)

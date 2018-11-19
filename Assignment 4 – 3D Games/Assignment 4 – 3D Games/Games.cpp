@@ -28,6 +28,7 @@ const char* INSTRUCTIONS =
 #include"shader.h"
 #include"Model.h"
 #include"Camera.h"
+#include"Map.h"
 #include <stdarg.h>             // Required for TraceLog()
 #include <cstdio>
 #include <iostream>
@@ -44,7 +45,9 @@ float timePast = 0;
 //You should have a representation for the state of each object
 float objx = 0, objy = 0, objz = 0;
 float colR = 1, colG = 1, colB = 1;
-
+const int SKYBOX_WIDTH = 6;
+const int SKYBOX_LENGTH = 6;
+const int SKYBOX_HEIGHT = 6;
 
 bool DEBUG_ON = true;
 GLuint InitShader(const char* vShaderFileName, const char* fShaderFileName);
@@ -83,7 +86,7 @@ struct Rectangle {
 
 typedef enum { LOG_INFO = 0, LOG_ERROR, LOG_WARNING, LOG_DEBUG, LOG_OTHER } TraceLogType;
 
-// LESSON 03: Texture formats enum
+//Texture formats enum
 typedef enum {
 	UNCOMPRESSED_GRAYSCALE = 1,     // 8 bit per pixel (no alpha)
 	UNCOMPRESSED_GRAY_ALPHA,        // 16 bpp (2 channels)
@@ -118,9 +121,9 @@ static void InitGraphicsDevice(int width, int height);  // Initialize graphic de
 static void CloseWindow(SDL_GLContext& context);                          // Close window and free resources
 static void SetTargetFPS(int fps);                      // Set target FPS (maximum)
 static void SyncFrame(void);                            // Synchronize to desired framerate
-
-
-
+//initial map
+void LoadMap(const Map& savedmap, Model& model);
+void DrawMap(Model& model,const Camera& camera,const Map& savedmap);
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);  //Initialize Graphics (for OpenGL)
@@ -144,33 +147,16 @@ int main(int argc, char *argv[])
 	camera.fovy = 45.0f;*/
 
 	
-
+	Map savedmap;
+	savedmap.ReadMap("level1.txt");
 	// 2D projection
 	// matProjection = MatrixOrtho(0.0, screenWidth, screenHeight, 0.0, 0.0, 1.0);
 	// matModelview = MatrixIdentity();
 	Shader textshader;
-	GLuint tex0 = 0;//id
-	int shaderUnit0 = 0; //which textshader
-	GLuint tex1 = 1;//id
-	int shaderUnit1 = 1;
-	//Texture2D* texture1 = new Texture2D(tex0, shaderUnit0);
-	Texture2D texture1(tex0, shaderUnit0);
-	texture1.LoadTexture("wood.bmp");
-	//Texture2D* texture2 = new Texture2D(tex0, shaderUnit1);
-	Texture2D texture2(tex0, shaderUnit1);
-	texture2.LoadTexture("brick.bmp");
-
-	GLuint texturedShader = textshader.InitShader("textured-Vertex.glsl", "textured-Fragment.glsl");
 	//load model
-	Model model(3);
-	/*model.texture[0] = new Texture2D(texture1);
-	model.texture[1] = new Texture2D(texture2);*/
-	model.obj[0] =new Object(texture1);
-	model.LoadModel("models/teapot.txt",0);
-	
-	model.obj[1] =new Object(texture2);
-	model.LoadModel("models/cube.txt",1);//cube
-
+	Model model;
+	LoadMap(savedmap,model);
+	GLuint texturedShader = textshader.InitShader("textured-Vertex.glsl", "textured-Fragment.glsl");
 	model.texturedShader = texturedShader;
 	GLuint vao = 0;
 	GLuint vbo[3] = { 0 };
@@ -185,7 +171,10 @@ int main(int argc, char *argv[])
 	teapot.UploadMeshData(teapotvao, teapotvbo);*/
 	SetTargetFPS(60);
 	//--------------------------------------------------------------------------------------    
-
+	glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
+	glm::vec3 floorScale(float(savedmap.MapSize[0]), float(savedmap.MapSize[1]), 0.1f);
+	camera.position = glm::vec3(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, 0.2f);
+	model.obj[1]->UploadPosition(glm::vec3(0.f,0.f,-3.1f));
 	// Main game loop   
 	SDL_Event windowEvent;
 	bool quit = false;
@@ -207,8 +196,11 @@ int main(int argc, char *argv[])
 		//----------------------------------------------------------------------------------
 
 		// Draw
-		model.DrawModel(0, camera,false);
-		model.DrawModel(1, camera,true);
+		DrawMap(model, camera, savedmap);
+		/*model.DrawModel(1, camera, floorScale);
+		glm::vec3 scale(1.8f, 1.8f, .5f);
+		model.DrawModel(0, camera);*/
+		//model.DrawModel(1, camera);//scale
 		//teapot.DrawModel(0);
 		//----------------------------------------------------------------------------------
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);         // Clear used buffers: Color and Depth (Depth is used for 3D)
@@ -233,7 +225,101 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+void LoadMap(const Map& savedmap, Model& model)
+{
+	GLuint text[4];//id
+	int shaderUnit[4]; //which textshader
+	int modelNum = savedmap.MapSize[0] * savedmap.MapSize[1] + 1;
+	for (int i = 0; i < 4; ++i)
+	{
+		text[i] = i;
+		shaderUnit[i] = i;
+	}
+	//Texture2D* texture1 = new Texture2D(tex0, shaderUnit0);
+	Texture2D texture1(text[0], shaderUnit[0]);
+	texture1.LoadTexture("texture/wood.bmp");
+	//Texture2D* texture2 = new Texture2D(tex0, shaderUnit1);
+	Texture2D texture2(text[1], shaderUnit[1]);
+	texture2.LoadTexture("texture/brick.bmp");
+	Texture2D texture3(text[2], shaderUnit[2]);
+	texture2.LoadTexture("texture/leaf.bmp");
+	Texture2D texture4(text[3], shaderUnit[3]);
+	texture2.LoadTexture("texture/drop.bmp");
 
+	model.InitModel(modelNum);
+	model.obj[0] = new Object(texture1);
+	model.ImportModel("models/cube.txt", 0);//cube for floor
+	glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
+	model.obj[0]->UploadPosition(glm::vec3(0.f, 0.f, -3.1f));
+	for (int i = 0; i < savedmap.MapSize[1]; ++i)
+	{
+		for (int j = 0; j < savedmap.MapSize[0]; ++j)
+		{
+			const char type = savedmap.SavedMap[i][j];
+			switch (type)
+			{
+			case 'G':
+				/*model.obj[i+j+1] = new Object(texture4);
+				model.ImportModel("models/sphere.txt", i + j + 1);*/
+				model.ImportModel("models/sphere.txt", new Object(texture4));
+				break;
+			case 'W':
+				model.ImportModel("models/cube.txt", new Object(texture2));
+				break;
+			case 'A':
+				model.ImportModel("models/knot.txt", new Object(texture3));
+				break;
+			case'a':
+				model.ImportModel("models/teapot.txt", new Object(texture1));
+				break;
+			case 'B':
+				model.ImportModel("models/knot.txt", new Object(texture3));
+				break;
+			case 'b':
+				model.ImportModel("models/teapot.txt", new Object(texture1));
+				break;
+			case 'C':
+				model.ImportModel("models/knot.txt", new Object(texture3));
+				break;
+			case'c':
+				model.ImportModel("models/teapot.txt", new Object(texture1));
+				break;
+			case 'D':
+				model.ImportModel("models/knot.txt", new Object(texture3));
+				break;
+			case 'd':
+				model.ImportModel("models/teapot.txt", new Object(texture1));
+				break;
+			case 'E':
+				model.ImportModel("models/knot.txt", new Object(texture3));
+				break;
+			case 'e':
+				model.ImportModel("models/teapot.txt", new Object(texture1));
+				break;
+			default:
+				break;
+			}
+			vector<Object *>::iterator it = model.obj.end() - 1;
+			(*it)->UploadPosition(glm::vec3(float(j),float(i), 0.0f));
+		}
+		/*model.obj[1] = new Object(texture2);
+		model.ImportModel("models/cube.txt", 1);
+		model.obj[2] = new Object(texture3);
+		model.ImportModel("models/knot.txt", 2);
+		model.obj[3] = new Object(texture4);
+		model.ImportModel("models/sphere.txt", 3);*/
+	}
+}
+void DrawMap(Model& model, const Camera& camera , const Map& savedmap)
+{
+	glm::vec3 floorScale(float(savedmap.MapSize[1])*SKYBOX_WIDTH, float(savedmap.MapSize[0])*SKYBOX_HEIGHT, 0.1f);
+	glm::vec3 scale(SKYBOX_WIDTH, SKYBOX_HEIGHT, SKYBOX_LENGTH);
+	model.DrawModel(0, camera, floorScale);
+	for (int i = 1; i < model.obj.size(); ++i)
+	{
+		model.DrawModel(i, camera, scale);
+	}
+}
 // GLFW3: Error callback function
 static void ErrorCallback(int error, const char* description)
 {
@@ -269,20 +355,30 @@ static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, 
 			switch (windowEvent.key.keysym.sym)
 			{
 			case  SDLK_UP:
-				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx -= .1; //Is shift pressed?
-				else model.obj[0]->objz += .1;
+				if (windowEvent.key.keysym.mod & KMOD_SHIFT)
+					camera.position = camera.position+ camera.up*m_speed;
+					//model.obj[0]->objx -= .1; //Is shift pressed?
+				else 
+					camera.position = camera.position + camera.viewDirection*m_speed;
+					//model.obj[0]->objz += .1;
 				break;
 			case SDLK_DOWN:
-				if (windowEvent.key.keysym.mod & KMOD_SHIFT) model.obj[0]->objx += .1; //Is shift pressed?
-				else model.obj[0]->objz -= .1;
+				if (windowEvent.key.keysym.mod & KMOD_SHIFT)
+					camera.position = camera.position - camera.up*m_speed;
+					//model.obj[0]->objx += .1; //Is shift pressed?
+				else 
+					camera.position = camera.position - camera.viewDirection*m_speed;
+					//model.obj[0]->objz -= .1;
 				break;
 			case SDLK_LEFT:
 				//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_LEFT)  //If "up key" is pressed
-				model.obj[0]->objy -= .1;
+				camera.position = camera.position- pitchAxis * m_speed;
+				//model.obj[0]->objy -= .1;
 				break;
 			case SDLK_RIGHT:
 				//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_RIGHT)  //If "down key" is pressed
-				model.obj[0]->objy += .1;
+				camera.position = camera.position + pitchAxis * m_speed;;
+				//model.obj[0]->objy += .1;
 				break;
 			case SDLK_a:
 				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(camera.up));

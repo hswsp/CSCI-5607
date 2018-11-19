@@ -98,6 +98,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\SDL2-devel-2.0.8-VC\SDL2-2.0.8\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <HeapReserveSize>1000000000</HeapReserveSize>
+      <StackReserveSize>1000000000</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -160,6 +163,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="glad\glad.h" />
     <ClInclude Include="glad\khrplatform.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="pch.h" />
@@ -169,6 +173,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Games.cpp" />
     <ClCompile Include="glad\glad.c" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="pch.cpp">
