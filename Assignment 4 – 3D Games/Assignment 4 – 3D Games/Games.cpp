@@ -52,7 +52,6 @@ const int SKYBOX_HEIGHT = 6;
 bool DEBUG_ON = true;
 GLuint InitShader(const char* vShaderFileName, const char* fShaderFileName);
 bool fullscreen = false;
-void Win2PPM(int width, int height);
 
 //srand(time(NULL));
 float rand01() {
@@ -64,38 +63,26 @@ typedef enum { false, true } bool;
 #endif
 
 // Color type, RGBA (32bit)
-typedef struct Color {
+struct Color 
+{
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
 	unsigned char a;
-} Color;
+};
 
 // Rectangle type
-struct Rectangle {
+struct Rect {
 	int x;
 	int y;
-	int width;
-	int height;
-	Rectangle() {};
-	Rectangle(int Ax,int Ay,int Awidth,int Aheight) :x(Ax),y(Ay),width(Awidth),height(Aheight){}
+	float width;
+	float height;
+	Rect() {};
+	Rect(int Ax,int Ay, float Awidth, float Aheight) :x(Ax),y(Ay),width(Awidth),height(Aheight){}
 };
 
 // Camera type, defines a camera position/orientation in 3d space
-
-
 typedef enum { LOG_INFO = 0, LOG_ERROR, LOG_WARNING, LOG_DEBUG, LOG_OTHER } TraceLogType;
-
-//Texture formats enum
-typedef enum {
-	UNCOMPRESSED_GRAYSCALE = 1,     // 8 bit per pixel (no alpha)
-	UNCOMPRESSED_GRAY_ALPHA,        // 16 bpp (2 channels)
-	UNCOMPRESSED_R5G6B5,            // 16 bpp
-	UNCOMPRESSED_R8G8B8,            // 24 bpp
-	UNCOMPRESSED_R5G5B5A1,          // 16 bpp (1 bit alpha)
-	UNCOMPRESSED_R4G4B4A4,          // 16 bpp (4 bit alpha)
-	UNCOMPRESSED_R8G8B8A8,          // 32 bpp
-} TextureFormat;
 // Projection matrix to draw our world
 glm::mat4 matProjection;                // Projection matrix to draw our world
 glm::mat4 matModelview;                 // Modelview matrix to draw our world
@@ -109,18 +96,18 @@ static double targetTime = 0.0;             // Desired time for one frame, if 0 
 //----------------------------------------------------------------------------------
 
 //callback functions to be registered: Error, Key, MouseButton, MouseCursor
-static void ErrorCallback(int error, const char* description);
-static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit,Model& model,Camera& camera);
-static void MouseButtonCallback(SDL_Window *window, int button, int action, int mods);
-static void MouseCursorPosCallback(SDL_Window *window, double x, double y);
+void ErrorCallback(int error, const char* description);
+void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit,Model& model,Camera& camera);
+void MouseButtonCallback(SDL_Window *window, int button, int action, int mods);
+void MouseCursorPosCallback(SDL_Window *window, double x, double y);
 void TraceLog(int msgType, const char *text, ...);      // Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
-
+bool CheckCollisionCircleRec(glm::vec2 center, float radius, const Rect& rec);
 //  Window and context creation, extensions loading
 //----------------------------------------------------------------------------------
-static void InitGraphicsDevice(int width, int height);  // Initialize graphic device
-static void CloseWindow(SDL_GLContext& context);                          // Close window and free resources
-static void SetTargetFPS(int fps);                      // Set target FPS (maximum)
-static void SyncFrame(void);                            // Synchronize to desired framerate
+void InitGraphicsDevice(int width, int height);  // Initialize graphic device
+void CloseWindow(SDL_GLContext& context);                          // Close window and free resources
+void SetTargetFPS(int fps);                      // Set target FPS (maximum)
+	void SyncFrame(void);                            // Synchronize to desired framerate
 //initial map
 void LoadMap(const Map& savedmap, Model& model,Camera& camera);
 void DrawMap(Model& model,const Camera& camera,const Map& savedmap);
@@ -187,18 +174,49 @@ int main(int argc, char *argv[])
 	while (!quit)
 	{
 		// Update
+		glm::vec3 oldCamPos = camera.position;
 		//----------------------------------------------------------------------------------
 		KeyCallback(window, windowEvent, quit, model,camera);                   // Register input events (keyboard, mouse)
 		// Clear the screen to default color
 		glClearColor(.2f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(texturedShader);
+		glm::vec2 playerPos(camera.position.x/ SKYBOX_WIDTH, camera.position.y/ SKYBOX_HEIGHT);
+		float playerRadius = 0.1f;  // Collision radius (player is modelled as a cilinder for collision)
+
+		int playerCellX = (int)(playerPos.x);
+		int playerCellY = (int)(playerPos.y);//+ 0.5f
+
+		// Out-of-limits security check
+		/*if (playerCellX < 0 || playerCellX >= savedmap.MapSize[0]|| playerCellY < 0|| playerCellY >= savedmap.MapSize[1])
+			camera.position = oldCamPos;*/
+		//if (playerCellX < 0) playerCellX = 0;
+		//else if (playerCellX >= savedmap.MapSize[0]) playerCellX = savedmap.MapSize[0] - 1;//
+		//if (playerCellY < 0) playerCellY = 0;
+		//else if (playerCellY >= savedmap.MapSize[1]) playerCellY = savedmap.MapSize[1] - 1;//
+
+		// Check map collisions using image data and player position
+		for (int y = 0; y < savedmap.MapSize[1]; y++)
+		{
+			for (int x = 0; x < savedmap.MapSize[0]; x++)
+			{
+				if ((savedmap.SavedMap[x][y]=='W'|| (savedmap.SavedMap[x][y] >='A'&& savedmap.SavedMap[x][y]<='E'))&&          // Collider (white pixel)
+					(CheckCollisionCircleRec(playerPos, playerRadius,
+					Rect(x, y, 1.0f, 1.0f))))//int(0.5f + x * 1.0f) int(0.5f + y * 1.0f)
+				{
+					// Collision detected, reset camera position
+					camera.position = oldCamPos;
+					break;
+				}
+			}
+		}
+		/*printf("playerCellX :%d ,playerCellY :%d\n", playerCellX, playerCellY);
+		printf("playerPos.x :%f ,playerPos.y :%f\n", playerPos.x, playerPos.y);*/
 
 		// Calculate projection matrix (from perspective) and view matrix from camera look at
 		matProjection = glm::perspective(camera.fovy*PI / 180.0f, (double)screenWidth / (double)screenHeight, 0.1, 100.0);
 		matModelview = glm::lookAt(camera.position, camera.target, camera.up);
 		model.LoadModel(matModelview, matProjection);
-		//teapot.LoadModel(matModelview, matProjection);
 		//----------------------------------------------------------------------------------
 
 		// Draw
@@ -365,13 +383,13 @@ void DrawMap(Model& model, const Camera& camera , const Map& savedmap)
 	}
 }
 // GLFW3: Error callback function
-static void ErrorCallback(int error, const char* description)
+void ErrorCallback(int error, const char* description)
 {
 	TraceLog(LOG_ERROR, description);
 }
 
 // GLFW3: Keyboard callback function
-static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& model, Camera& camera)
+void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& model, Camera& camera)
 {
 	bool fullscreen = false;
 	glm::vec4 m_direction(camera.viewDirection.x, camera.viewDirection.y, camera.viewDirection.z, 1.0f);
@@ -489,25 +507,6 @@ static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, 
 			break;
 		default:break;
 		}
-		
-		
-			
-		////SJG: Use key input to change the state of the object
-		////     We can use the ".mod" flag to see if modifiers such as shift are pressed
-		//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_UP) { //If "up key" is pressed
-		//	if (windowEvent.key.keysym.mod & KMOD_SHIFT) objx -= .1; //Is shift pressed?
-		//	else objz += .1;
-		//}
-		//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_DOWN) { //If "down key" is pressed
-		//	if (windowEvent.key.keysym.mod & KMOD_SHIFT) objx += .1; //Is shift pressed?
-		//	else objz -= .1;
-		//}
-		//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_LEFT) { //If "up key" is pressed
-		//	objy -= .1;
-		//}
-		//if (windowEvent.type == SDL_KEYDOWN && windowEvent.key.keysym.sym == SDLK_RIGHT) { //If "down key" is pressed
-		//	objy += .1;
-		//}
 		//if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_c) { //If "c" is pressed
 		//	colR = rand01();
 		//	colG = rand01();
@@ -515,11 +514,6 @@ static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, 
 		//}
 	}
 }
-
-
-
-
-
 // Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
 void TraceLog(int msgType, const char *text, ...)
 {
@@ -545,17 +539,8 @@ void TraceLog(int msgType, const char *text, ...)
 
 //----------------------------------------------------------------------------------
 // Initialize graphic device (OpenGL 3.3)
-static void InitGraphicsDevice(int width, int height)
+void InitGraphicsDevice(int width, int height)
 {
-	// Load OpenGL 3.3 supported extensions
-	// SDL Initialization + OpenGL 3.3 Context + Extensions
-	//SDL_Init(SDL_INIT_VIDEO);  //Initialize Graphics (for OpenGL)
-
-	////Ask SDL to get a recent version of OpenGL (3.2 or greater)
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
 	//Load OpenGL extentions with GLAD
 	if (gladLoadGLLoader(SDL_GL_GetProcAddress)) 
 	{
@@ -607,7 +592,7 @@ static void InitGraphicsDevice(int width, int height)
 }
 
 // Close window and free resources
-static void CloseWindow(SDL_GLContext& context)
+void CloseWindow(SDL_GLContext& context)
 {
 	SDL_GL_DeleteContext(context);
 	SDL_Quit();
@@ -616,14 +601,14 @@ static void CloseWindow(SDL_GLContext& context)
 }
 
 // Set target FPS (maximum)
-static void SetTargetFPS(int fps)
+void SetTargetFPS(int fps)
 {
 	if (fps < 1) targetTime = 0.0;
 	else targetTime = 1.0 / (double)fps;
 }
 
 // Synchronize to desired framerate
-static void SyncFrame(void)
+void SyncFrame(void)
 {
 	// Frame time control system
 	currentTime = SDL_GetTicks() / 1000.f;
@@ -645,4 +630,27 @@ static void SyncFrame(void)
 		frameTime += extraTime;
 	}
 }
+// Check collision between circle and rectangle. true means collision
+bool CheckCollisionCircleRec(glm::vec2 center, float radius, const Rect& rec)
+{
+	float recCenterX = rec.x + rec.width / 2;
+	float recCenterY = rec.y + rec.height / 2;
 
+	float dx = fabsf(center.x - recCenterX);
+	float dy = fabsf(center.y - recCenterY);
+	float cornerDistanceSq = (dx - (float)rec.width / 2.0f)*(dx - (float)rec.width / 2.0f) +
+		(dy - (float)rec.height / 2.0f)*(dy - (float)rec.height / 2.0f);
+	if (dx > ((float)rec.width / 2.0f + radius)) 
+	{ 
+		return false; 
+	}
+	if (dy > ((float)rec.height / 2.0f + radius)) 
+	{ 
+		return false; 
+	}
+	return true;
+	/*if (dx <= ((float)rec.width / 2.0f)) { return true; }
+	if (dy <= ((float)rec.height / 2.0f)) { return true; }*/
+
+	//return (cornerDistanceSq <= (radius*radius));
+}

@@ -1,5 +1,4 @@
-﻿  pch.cpp
-  Camera.cpp
+﻿  Camera.cpp
   GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: rotate_slow function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
@@ -13,9 +12,9 @@
   GLM: angle function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: angleAxis function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   Games.cpp
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(241): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(361): warning C4018: '<': signed/unsigned mismatch
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(381): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(259): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(379): warning C4018: '<': signed/unsigned mismatch
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(399): warning C4305: 'initializing': truncation from 'double' to 'float'
   Map.cpp
   Model.cpp
   GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
