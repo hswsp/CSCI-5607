@@ -10,12 +10,12 @@ void Map::ReadMap(const char* filename)
 		return;
 	}
 	//int numLines = 0;
-	modelFile >> MapSize[0]>> MapSize[1];//height width
-	SavedMap = new char*[MapSize[1]];
-	for (int i = 0; i < MapSize[1]; ++i)
+	modelFile >> MapSize[1]>> MapSize[0];//height width
+	SavedMap = new char*[MapSize[0]];
+	for (int i = 0; i < MapSize[0]; ++i)
 	{
-		SavedMap[i] = new char[MapSize[0]];
-		for (int j = 0; j < MapSize[0]; ++j)
+		SavedMap[i] = new char[MapSize[1]];
+		for (int j = 0; j < MapSize[1]; ++j)
 		{
 			modelFile >> SavedMap[i][j];
 		}

@@ -8,7 +8,7 @@ public:
 	void ReadMap(const char* filename);
 	~Map()
 	{
-		for (int i = 0; i < MapSize[1]; ++i)
+		for (int i = 0; i < MapSize[0]; ++i)
 		{
 			delete[] SavedMap[i];
 		}

@@ -66,7 +66,7 @@ struct Model
 	/*Model(Texture2D** Atexture, float x=0, float y=0, float z=0): 
 		texture(Atexture), objx(x), objy(y), objz(z){};*/
 	void InitModel(const int AtotalNumVerts = 0);
-	Model(int num= 1): MaxmodelNum(num)
+	Model(int num= 1)
 	{
 		InitModel(num);
 		/*vertexCount = new int[num];

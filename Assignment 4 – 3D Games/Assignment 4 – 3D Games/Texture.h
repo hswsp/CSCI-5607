@@ -16,15 +16,15 @@ struct Image {
 
 // NOTE: Texture data is stored in GPU memory (VRAM)
 struct Texture2D {
-	GLuint id;        // OpenGL texture id
+	int id;        // OpenGL texture id
 	int width;              // Texture base width
 	int height;             // Texture base height
 	bool mipmaps;            // Mipmap levels, 1 by default
 	int format;             // Data format (TextureFormat)
-	int textureUnit; //texUnit
+	GLuint textureUnit; //texUnit
 	
 	Texture2D() {};
-	Texture2D(GLuint textureid,int AtextureUnit, bool Ismipmap = true) 
+	Texture2D(int textureid,int AtextureUnit, bool Ismipmap = true) 
 		:id(textureid),textureUnit(AtextureUnit),mipmaps(Ismipmap) {}
 	Texture2D(Texture2D& Atexture):
 		id(Atexture.id), width(Atexture.width),height(Atexture.height),mipmaps(Atexture.mipmaps),

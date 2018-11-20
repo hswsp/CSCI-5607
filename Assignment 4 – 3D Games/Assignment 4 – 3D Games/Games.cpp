@@ -122,7 +122,7 @@ static void CloseWindow(SDL_GLContext& context);                          // Clo
 static void SetTargetFPS(int fps);                      // Set target FPS (maximum)
 static void SyncFrame(void);                            // Synchronize to desired framerate
 //initial map
-void LoadMap(const Map& savedmap, Model& model);
+void LoadMap(const Map& savedmap, Model& model,Camera& camera);
 void DrawMap(Model& model,const Camera& camera,const Map& savedmap);
 int main(int argc, char *argv[])
 {
@@ -135,6 +135,12 @@ int main(int argc, char *argv[])
 
 	//Create a window (offsetx, offsety, width, height, flags)
 	SDL_Window* window = SDL_CreateWindow("MazeGame", 100, 100, screenWidth, screenHeight, SDL_WINDOW_OPENGL);
+	if (window == nullptr)
+	{
+		std::cout << "SDL_CreateWindow() Error: " << SDL_GetError() << std::endl;
+		std::cin.get();
+		return -1;
+	}
 	//Create a context to draw in
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 	InitGraphicsDevice(screenWidth, screenHeight);  // Initialize graphic device (OpenGL)
@@ -155,7 +161,7 @@ int main(int argc, char *argv[])
 	Shader textshader;
 	//load model
 	Model model;
-	LoadMap(savedmap,model);
+	LoadMap(savedmap,model,camera);
 	GLuint texturedShader = textshader.InitShader("textured-Vertex.glsl", "textured-Fragment.glsl");
 	model.texturedShader = texturedShader;
 	GLuint vao = 0;
@@ -171,10 +177,10 @@ int main(int argc, char *argv[])
 	teapot.UploadMeshData(teapotvao, teapotvbo);*/
 	SetTargetFPS(60);
 	//--------------------------------------------------------------------------------------    
-	glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
+	/*glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
 	glm::vec3 floorScale(float(savedmap.MapSize[0]), float(savedmap.MapSize[1]), 0.1f);
 	camera.position = glm::vec3(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, 0.2f);
-	model.obj[1]->UploadPosition(glm::vec3(0.f,0.f,-3.1f));
+	model.obj[1]->UploadPosition(glm::vec3(0.f,0.f,-3.1f));*/
 	// Main game loop   
 	SDL_Event windowEvent;
 	bool quit = false;
@@ -189,7 +195,7 @@ int main(int argc, char *argv[])
 		glUseProgram(texturedShader);
 
 		// Calculate projection matrix (from perspective) and view matrix from camera look at
-		matProjection = glm::perspective(camera.fovy*PI / 180.0f, (double)screenWidth / (double)screenHeight, 1.0, 10.0);
+		matProjection = glm::perspective(camera.fovy*PI / 180.0f, (double)screenWidth / (double)screenHeight, 0.1, 100.0);
 		matModelview = glm::lookAt(camera.position, camera.target, camera.up);
 		model.LoadModel(matModelview, matProjection);
 		//teapot.LoadModel(matModelview, matProjection);
@@ -225,11 +231,15 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void LoadMap(const Map& savedmap, Model& model)
+void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 {
-	GLuint text[4];//id
-	int shaderUnit[4]; //which textshader
-	int modelNum = savedmap.MapSize[0] * savedmap.MapSize[1] + 1;
+	int text[4];//id
+	GLuint shaderUnit[4]; //which textshader
+	int modelNum = savedmap.MapSize[0] * savedmap.MapSize[1];
+	float keyoffset= 0.25;//SKYBOX_HEIGHT
+	float walloffset= 0.5;//SKYBOX_HEIGHT
+	float gate0ffset= 0.36;//SKYBOX_HEIGHT
+	float exitoffset = 0.5;
 	for (int i = 0; i < 4; ++i)
 	{
 		text[i] = i;
@@ -242,65 +252,92 @@ void LoadMap(const Map& savedmap, Model& model)
 	Texture2D texture2(text[1], shaderUnit[1]);
 	texture2.LoadTexture("texture/brick.bmp");
 	Texture2D texture3(text[2], shaderUnit[2]);
-	texture2.LoadTexture("texture/leaf.bmp");
+	texture3.LoadTexture("texture/leaf.bmp");
 	Texture2D texture4(text[3], shaderUnit[3]);
-	texture2.LoadTexture("texture/drop.bmp");
-
-	model.InitModel(modelNum);
-	model.obj[0] = new Object(texture1);
-	model.ImportModel("models/cube.txt", 0);//cube for floor
-	glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
-	model.obj[0]->UploadPosition(glm::vec3(0.f, 0.f, -3.1f));
-	for (int i = 0; i < savedmap.MapSize[1]; ++i)
+	texture4.LoadTexture("texture/drop.bmp");
+	model.InitModel(2*modelNum);
+	//floor
+	for (int i = 0; i < savedmap.MapSize[0]; ++i)
 	{
-		for (int j = 0; j < savedmap.MapSize[0]; ++j)
+		for (int j = 0; j < savedmap.MapSize[1]; ++j)
+		{
+			model.ImportModel("models/cube.txt", new Object(texture2));
+			//vector<Object *>::iterator it = model.obj.end() - 1;
+			//(*it)->UploadPosition(glm::vec3((float(i)+0.5), (float(j)+0.5), 0.0f));
+			model.obj[model.obj.size()-1]->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), 0.0f));
+		}
+	}
+	//model.ImportModel("models/cube.txt", new Object(texture1));
+	//model.obj[0] = new Object(texture1);
+	//model.ImportModel("models/cube.txt", 0);//cube for floor
+	/*glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
+	model.obj[0]->UploadPosition(glm::vec3(0.f, 0.f, -3.1f));*/
+	for (int i = 0; i < savedmap.MapSize[0]; ++i)
+	{
+		for (int j = 0; j < savedmap.MapSize[1]; ++j)
 		{
 			const char type = savedmap.SavedMap[i][j];
+			vector<Object *>::iterator it = model.obj.end() - 1;
 			switch (type)
 			{
 			case 'G':
 				/*model.obj[i+j+1] = new Object(texture4);
 				model.ImportModel("models/sphere.txt", i + j + 1);*/
 				model.ImportModel("models/sphere.txt", new Object(texture4));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), exitoffset));
 				break;
 			case 'W':
 				model.ImportModel("models/cube.txt", new Object(texture2));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5),walloffset ));
 				break;
 			case 'A':
 				model.ImportModel("models/knot.txt", new Object(texture3));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'a':
 				model.ImportModel("models/teapot.txt", new Object(texture1));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'B':
 				model.ImportModel("models/knot.txt", new Object(texture3));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'b':
 				model.ImportModel("models/teapot.txt", new Object(texture1));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'C':
 				model.ImportModel("models/knot.txt", new Object(texture3));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'c':
 				model.ImportModel("models/teapot.txt", new Object(texture1));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'D':
 				model.ImportModel("models/knot.txt", new Object(texture3));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'd':
 				model.ImportModel("models/teapot.txt", new Object(texture1));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'E':
 				model.ImportModel("models/knot.txt", new Object(texture3));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'e':
 				model.ImportModel("models/teapot.txt", new Object(texture1));
+				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
+				break;
+			case 'S':
+				camera.position = glm::vec3((float(i) + 0.5)*SKYBOX_WIDTH,(float(j) + 0.5)*SKYBOX_HEIGHT,2.0f );
+				//(*it++)->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), 0.1f));
 				break;
 			default:
 				break;
 			}
-			vector<Object *>::iterator it = model.obj.end() - 1;
-			(*it)->UploadPosition(glm::vec3(float(j),float(i), 0.0f));
+			
 		}
 		/*model.obj[1] = new Object(texture2);
 		model.ImportModel("models/cube.txt", 1);
@@ -312,12 +349,19 @@ void LoadMap(const Map& savedmap, Model& model)
 }
 void DrawMap(Model& model, const Camera& camera , const Map& savedmap)
 {
-	glm::vec3 floorScale(float(savedmap.MapSize[1])*SKYBOX_WIDTH, float(savedmap.MapSize[0])*SKYBOX_HEIGHT, 0.1f);
+	//glm::vec3 floorScale(float(savedmap.MapSize[1])*SKYBOX_WIDTH, float(savedmap.MapSize[0])*SKYBOX_HEIGHT, 0.1f);
+	glm::vec3 floorScale(SKYBOX_WIDTH, SKYBOX_HEIGHT, 0.1f);
 	glm::vec3 scale(SKYBOX_WIDTH, SKYBOX_HEIGHT, SKYBOX_LENGTH);
-	model.DrawModel(0, camera, floorScale);
-	for (int i = 1; i < model.obj.size(); ++i)
+	//model.DrawModel(0, camera, floorScale);
+	for (int i = 0; i < model.MaxmodelNum/2; ++i)
+	{
+		model.DrawModel(i, camera, floorScale);
+		//model.DrawModel(model.MaxmodelNum / 2-1, camera, floorScale);
+	}
+	for (int i = model.MaxmodelNum / 2; i < model.obj.size(); ++i)// 
 	{
 		model.DrawModel(i, camera, scale);
+		//model.DrawModel(model.obj.size()-1, camera, scale);
 	}
 }
 // GLFW3: Error callback function
@@ -381,13 +425,13 @@ static void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, 
 				//model.obj[0]->objy += .1;
 				break;
 			case SDLK_a:
-				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(camera.up));
+				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(camera.up));//glm::vec3(0.0f,0.0f,1.0f)
 				m_direction = rot * m_direction;
 				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
 				camera.target = camera.position + camera.viewDirection;
 					break;
 			case SDLK_d:
-				rot = glm::rotate(rot, -1.f * m_speed, glm::normalize(camera.up));
+				rot = glm::rotate(rot, -1.f * m_speed, glm::normalize(camera.up));//glm::vec3(0.0f, 0.0f, 1.0f)
 				m_direction = rot * m_direction;
 				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
 				camera.target = camera.position + camera.viewDirection;

@@ -14,6 +14,7 @@ void Model::InitModel(const int AtotalNumModels)
 {
 	//obj = new Object*[modelNum];
 	totalNumVerts = 0;
+	this->MaxmodelNum = AtotalNumModels;
 	obj.reserve(AtotalNumModels);
 }
 void Model::ImportModel(const char* modelpath, Object* objects)//int k
@@ -32,6 +33,7 @@ void Model::ImportModel(const char* modelpath, Object* objects)//int k
 	this->totalNumVerts+= numLines / 8;
 	modelFile.close();
 	this->obj.push_back(objects);
+	//this->MaxmodelNum++;
 }
 
 void Model::UploadMeshData(GLuint& vao, GLuint vbo[3])
@@ -96,27 +98,27 @@ void Model::LoadModel(glm::mat4 view, glm::mat4 proj)
 	for (int i = 0; i < this->obj.size(); ++i)
 	{
 		//only have 2 now
-		if (this->obj[i]->texture->textureUnit == 0)
+		if (this->obj[i]->texture->textureUnit == 1)
 		{
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex0"), 0);
 		}
-		else if (this->obj[i]->texture->textureUnit == 1)
+		else if (this->obj[i]->texture->textureUnit == 2)
 		{
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex1"), 1);
 		}
-		if (this->obj[i]->texture->textureUnit == 2)
+		if (this->obj[i]->texture->textureUnit == 3)
 		{
-			glActiveTexture(GL_TEXTURE0);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex2"), 2);
 		}
-		else if (this->obj[i]->texture->textureUnit == 3)
+		else if (this->obj[i]->texture->textureUnit == 4)
 		{
-			glActiveTexture(GL_TEXTURE1);
+			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex3"), 3);
 		}
@@ -130,8 +132,6 @@ void Model::DrawModel(int k, Camera camera, glm::vec3 scale) //bool IsScale
 	glm::vec3 colVec(colR, colG, colB);
 	glUniform3fv(uniColor, 1, glm::value_ptr(colVec));
 	GLint uniTexID = glGetUniformLocation(texturedShader, "texID");
-
-
 	GLint uniModel = glGetUniformLocation(texturedShader, "model");
 
 	glm::mat4 model;
@@ -141,7 +141,7 @@ void Model::DrawModel(int k, Camera camera, glm::vec3 scale) //bool IsScale
 	model = glm::translate(model, glm::vec3(this->obj[k]->objx, this->obj[k]->objy, this->obj[k]->objz));
 
 	//Set which texture to use (1 = brick texture ... bound to GL_TEXTURE1)
-	glUniform1i(uniTexID,this->obj[k]->texture->textureUnit);
+	glUniform1i(uniTexID,this->obj[k]->texture->id);
 	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 	//View
 	GLint uniView = glGetUniformLocation(texturedShader, "view");

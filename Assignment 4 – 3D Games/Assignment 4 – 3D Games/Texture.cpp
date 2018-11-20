@@ -10,10 +10,10 @@ void Texture2D::LoadTexture(const char * filename)
 	}
 	this->height = surface->h;
 	this->width = surface->w;
-	glGenTextures(1, &id);
+	glGenTextures(1, &textureUnit);
 
-	glActiveTexture(GL_TEXTURE0+textureUnit);
-	glBindTexture(GL_TEXTURE_2D, id);
+	glActiveTexture(GL_TEXTURE0 + textureUnit - 1);
+	glBindTexture(GL_TEXTURE_2D, textureUnit - 1);
 
 	//What to do outside 0-1 range
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
