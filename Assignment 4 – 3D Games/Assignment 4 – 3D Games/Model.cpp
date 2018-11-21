@@ -200,6 +200,24 @@ void Model::LoadModel(glm::mat4 view, glm::mat4 proj)
 			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
 			glUniform1i(glGetUniformLocation(texturedShader, "tex3"), 3);
 		}
+		else if (this->obj[i]->texture->textureUnit == 5)
+		{
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
+			glUniform1i(glGetUniformLocation(texturedShader, "tex4"), 4);
+		}
+		else if (this->obj[i]->texture->textureUnit == 6)
+		{
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
+			glUniform1i(glGetUniformLocation(texturedShader, "tex5"), 5);
+		}
+		else if (this->obj[i]->texture->textureUnit == 7)
+		{
+			glActiveTexture(GL_TEXTURE6);
+			glBindTexture(GL_TEXTURE_2D, this->obj[i]->texture->id);
+			glUniform1i(glGetUniformLocation(texturedShader, "tex6"), 6);
+		}
 	}
 	glBindVertexArray(vaoId);
 }

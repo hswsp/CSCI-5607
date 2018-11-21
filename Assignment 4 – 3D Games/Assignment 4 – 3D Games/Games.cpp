@@ -288,7 +288,7 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 	float walloffset= 0.5;//SKYBOX_HEIGHT
 	float gate0ffset= 0.36;//SKYBOX_HEIGHT
 	float exitoffset = 0.5;
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		text[i] = i;
 		shaderUnit[i] = i;
@@ -303,11 +303,11 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 	texture3.LoadTexture("texture/leaf.bmp");
 	Texture2D texture4(text[3], shaderUnit[3]);
 	texture4.LoadTexture("texture/drop.bmp");
-	Texture2D texture5(text[3], shaderUnit[3]);
+	Texture2D texture5(text[4], shaderUnit[4]);
 	texture5.LoadTexture("texture/1.bmp");
-	Texture2D texture6(text[3], shaderUnit[3]);
+	Texture2D texture6(text[5], shaderUnit[5]);
 	texture6.LoadTexture("texture/2.bmp");
-	Texture2D texture7(text[3], shaderUnit[3]);
+	Texture2D texture7(text[6], shaderUnit[6]);
 	texture7.LoadTexture("texture/3.bmp");
 	model.InitModel(2*modelNum);
 	int k = 0;
