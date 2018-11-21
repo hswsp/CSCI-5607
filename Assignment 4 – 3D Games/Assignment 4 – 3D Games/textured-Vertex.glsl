@@ -13,7 +13,8 @@ out vec3 vertNormal;
 out vec3 pos;
 out vec3 lightDir;
 out vec2 texcoord;
-
+out mat4 curview;
+ 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
@@ -27,4 +28,5 @@ void main() {
    vec4 norm4 = transpose(inverse(view*model)) * vec4(inNormal,0.0);
    vertNormal = normalize(norm4.xyz);
    texcoord = inTexcoord;
+   curview = view;
 }

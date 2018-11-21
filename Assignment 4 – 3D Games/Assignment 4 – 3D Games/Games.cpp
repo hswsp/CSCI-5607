@@ -29,6 +29,7 @@ const char* INSTRUCTIONS =
 #include"Model.h"
 #include"Camera.h"
 #include"Map.h"
+#include"Light.h"
 #include <stdarg.h>             // Required for TraceLog()
 #include <cstdio>
 #include <iostream>
@@ -45,12 +46,12 @@ float timePast = 0;
 //You should have a representation for the state of each object
 float objx = 0, objy = 0, objz = 0;
 float colR = 1, colG = 1, colB = 1;
-const int SKYBOX_WIDTH = 6;
-const int SKYBOX_LENGTH = 6;
-const int SKYBOX_HEIGHT = 6;
+static const int SKYBOX_WIDTH = 6;
+static const int SKYBOX_LENGTH = 6;
+static const int SKYBOX_HEIGHT = 6;
 
 bool DEBUG_ON = true;
-GLuint InitShader(const char* vShaderFileName, const char* fShaderFileName);
+//GLuint InitShader(const char* vShaderFileName, const char* fShaderFileName);
 bool fullscreen = false;
 
 //srand(time(NULL));
@@ -86,16 +87,12 @@ typedef enum { LOG_INFO = 0, LOG_ERROR, LOG_WARNING, LOG_DEBUG, LOG_OTHER } Trac
 // Projection matrix to draw our world
 glm::mat4 matProjection;                // Projection matrix to draw our world
 glm::mat4 matModelview;                 // Modelview matrix to draw our world
-
+//-------------------------------------frame control------------------------------------------------
 static double currentTime, previousTime;    // Used to track timmings
 static double frameTime = 0.0;              // Time measure for one frame
 static double targetTime = 0.0;             // Desired time for one frame, if 0 not applied
-
-//----------------------------------------------------------------------------------
-// Module specific Functions Declaration
-//----------------------------------------------------------------------------------
-
 //callback functions to be registered: Error, Key, MouseButton, MouseCursor
+//-----------------------------------------------------------------------------------------------------
 void ErrorCallback(int error, const char* description);
 void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit,Model& model,Camera& camera);
 void MouseButtonCallback(SDL_Window *window, int button, int action, int mods);
@@ -108,13 +105,14 @@ void InitGraphicsDevice(int width, int height);  // Initialize graphic device
 void CloseWindow(SDL_GLContext& context);                          // Close window and free resources
 void SetTargetFPS(int fps);                      // Set target FPS (maximum)
 	void SyncFrame(void);                            // Synchronize to desired framerate
-//initial map
+//--------------------------------------initial map----------------------------------------------------
 void LoadMap(const Map& savedmap, Model& model,Camera& camera);
 void DrawMap(Model& model,const Camera& camera,const Map& savedmap);
+void showWin(SDL_Window * window, SDL_Event& event);
+
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);  //Initialize Graphics (for OpenGL)
-
 	//Ask SDL to get a recent version of OpenGL (3.2 or greater)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -170,7 +168,9 @@ int main(int argc, char *argv[])
 	model.obj[1]->UploadPosition(glm::vec3(0.f,0.f,-3.1f));*/
 	// Main game loop   
 	SDL_Event windowEvent;
+	SDL_Event gameExit;
 	bool quit = false;
+	int PersonBind = -1;
 	while (!quit)
 	{
 		// Update
@@ -181,20 +181,19 @@ int main(int argc, char *argv[])
 		glClearColor(.2f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(texturedShader);
+		//map control
 		glm::vec2 playerPos(camera.position.x/ SKYBOX_WIDTH, camera.position.y/ SKYBOX_HEIGHT);
 		float playerRadius = 0.1f;  // Collision radius (player is modelled as a cilinder for collision)
-
 		int playerCellX = (int)(playerPos.x);
 		int playerCellY = (int)(playerPos.y);//+ 0.5f
 
 		// Out-of-limits security check
-		/*if (playerCellX < 0 || playerCellX >= savedmap.MapSize[0]|| playerCellY < 0|| playerCellY >= savedmap.MapSize[1])
-			camera.position = oldCamPos;*/
-		//if (playerCellX < 0) playerCellX = 0;
+		if (playerCellX < 0 || playerCellX >= savedmap.MapSize[0]|| playerCellY < 0|| playerCellY >= savedmap.MapSize[1])
+			camera.position = oldCamPos;
+		/*if (playerCellX < 0) playerCellX = 0;*/
 		//else if (playerCellX >= savedmap.MapSize[0]) playerCellX = savedmap.MapSize[0] - 1;//
 		//if (playerCellY < 0) playerCellY = 0;
 		//else if (playerCellY >= savedmap.MapSize[1]) playerCellY = savedmap.MapSize[1] - 1;//
-
 		// Check map collisions using image data and player position
 		for (int y = 0; y < savedmap.MapSize[1]; y++)
 		{
@@ -204,11 +203,46 @@ int main(int argc, char *argv[])
 					(CheckCollisionCircleRec(playerPos, playerRadius,
 					Rect(x, y, 1.0f, 1.0f))))//int(0.5f + x * 1.0f) int(0.5f + y * 1.0f)
 				{
-					// Collision detected, reset camera position
-					camera.position = oldCamPos;
+					if (camera.key - 32 != savedmap.SavedMap[x][y])//no key
+						// Collision detected, reset camera position
+						camera.position = oldCamPos;
+					else//open door
+					{
+						savedmap.SavedMap[x][y] = '0';//clear door
+
+						model.obj[PersonBind]->display = false;//not show that key
+						model.obj[savedmap.mapObj[x][y]]->display = false; //not show that door
+						PersonBind = -1;
+					}
 					break;
 				}
 			}
+		}
+		//hold the key
+		if (PersonBind == -1)
+		{
+			glm::vec2 bias = glm::normalize(glm::vec2(camera.viewDirection.x, camera.viewDirection.y));
+			glm::vec2 access = playerPos + bias * 0.25f;
+			int touchX = (int)(access.x);
+			int touchY = (int)(access.y);
+			if (savedmap.SavedMap[touchX][touchY] >= 'a' && savedmap.SavedMap[touchX][touchY] <= 'e')
+			{
+				int objNum = savedmap.mapObj[touchX][touchY];
+				if (!model.obj[objNum]->Isbind) 
+				{
+					PersonBind = objNum;
+					model.obj[PersonBind]->Isbind = true;//bind the key to camera
+					camera.key = savedmap.SavedMap[touchX][touchY];
+					savedmap.SavedMap[touchX][touchY] = '0';//pick up the key
+				}
+			}
+		}
+		else
+		{
+			glm::vec2 bias = glm::normalize(glm::vec2(camera.viewDirection.x, camera.viewDirection.y));
+			glm::vec2 access = playerPos + bias * 0.5f;
+			model.obj[PersonBind]->objx = access.x * 2.0f;
+			model.obj[PersonBind]->objy = access.y* 2.0f;
 		}
 		/*printf("playerCellX :%d ,playerCellY :%d\n", playerCellX, playerCellY);
 		printf("playerPos.x :%f ,playerPos.y :%f\n", playerPos.x, playerPos.y);*/
@@ -218,19 +252,16 @@ int main(int argc, char *argv[])
 		matModelview = glm::lookAt(camera.position, camera.target, camera.up);
 		model.LoadModel(matModelview, matProjection);
 		//----------------------------------------------------------------------------------
-
 		// Draw
 		DrawMap(model, camera, savedmap);
-		/*model.DrawModel(1, camera, floorScale);
-		glm::vec3 scale(1.8f, 1.8f, .5f);
-		model.DrawModel(0, camera);*/
-		//model.DrawModel(1, camera);//scale
-		//teapot.DrawModel(0);
+		if (savedmap.SavedMap[(int)playerPos.x][(int)playerPos.y] == 'G')
+		{
+			showWin(window, gameExit);
+			quit = true;
+		}
 		//----------------------------------------------------------------------------------
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);         // Clear used buffers: Color and Depth (Depth is used for 3D)
 		// TODO: Draw on the screen
-		
-		
 		SDL_GL_SwapWindow(window);          //Double buffering
 		SyncFrame();                        // Wait required time to target framerate
 		//----------------------------------------------------------------------------------
@@ -241,7 +272,6 @@ int main(int argc, char *argv[])
 	glDeleteProgram(texturedShader);
 	glDeleteBuffers(1, vbo);
 	glDeleteVertexArrays(1, &vao);
-
 	CloseWindow(context);
 	//--------------------------------------------------------------------------------------   
 	
@@ -273,23 +303,27 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 	texture3.LoadTexture("texture/leaf.bmp");
 	Texture2D texture4(text[3], shaderUnit[3]);
 	texture4.LoadTexture("texture/drop.bmp");
+	Texture2D texture5(text[3], shaderUnit[3]);
+	texture5.LoadTexture("texture/1.bmp");
+	Texture2D texture6(text[3], shaderUnit[3]);
+	texture6.LoadTexture("texture/2.bmp");
+	Texture2D texture7(text[3], shaderUnit[3]);
+	texture7.LoadTexture("texture/3.bmp");
 	model.InitModel(2*modelNum);
+	int k = 0;
 	//floor
 	for (int i = 0; i < savedmap.MapSize[0]; ++i)
 	{
 		for (int j = 0; j < savedmap.MapSize[1]; ++j)
 		{
-			model.ImportModel("models/cube.txt", new Object(texture2));
+			model.ImportModel("models/cube.txt", new Object(texture2, FLOOR));
 			//vector<Object *>::iterator it = model.obj.end() - 1;
 			//(*it)->UploadPosition(glm::vec3((float(i)+0.5), (float(j)+0.5), 0.0f));
 			model.obj[model.obj.size()-1]->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), 0.0f));
+			savedmap.mapObj[i][j] = k++;
 		}
 	}
-	//model.ImportModel("models/cube.txt", new Object(texture1));
-	//model.obj[0] = new Object(texture1);
-	//model.ImportModel("models/cube.txt", 0);//cube for floor
-	/*glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
-	model.obj[0]->UploadPosition(glm::vec3(0.f, 0.f, -3.1f));*/
+	
 	for (int i = 0; i < savedmap.MapSize[0]; ++i)
 	{
 		for (int j = 0; j < savedmap.MapSize[1]; ++j)
@@ -301,51 +335,63 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 			case 'G':
 				/*model.obj[i+j+1] = new Object(texture4);
 				model.ImportModel("models/sphere.txt", i + j + 1);*/
-				model.ImportModel("models/sphere.txt", new Object(texture4));
+				model.ImportModel("models/sphere.txt", new Object(texture4,EXIT));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), exitoffset));
 				break;
 			case 'W':
-				model.ImportModel("models/cube.txt", new Object(texture2));
+				model.ImportModel("models/cube.txt", new Object(texture2,WALL));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5),walloffset ));
 				break;
 			case 'A':
-				model.ImportModel("models/knot.txt", new Object(texture3));
+				model.ImportModel("models/knot.txt", new Object(texture1,DOOR));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'a':
-				model.ImportModel("models/teapot.txt", new Object(texture1));
+				model.ImportModel("models/teapot.txt", new Object(texture1,KEY));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'B':
-				model.ImportModel("models/knot.txt", new Object(texture3));
+				model.ImportModel("models/knot.txt", new Object(texture3, DOOR));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'b':
-				model.ImportModel("models/teapot.txt", new Object(texture1));
+				model.ImportModel("models/teapot.txt", new Object(texture3, KEY));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'C':
-				model.ImportModel("models/knot.txt", new Object(texture3));
+				model.ImportModel("models/knot.txt", new Object(texture5, DOOR));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'c':
-				model.ImportModel("models/teapot.txt", new Object(texture1));
+				model.ImportModel("models/teapot.txt", new Object(texture5, KEY));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'D':
-				model.ImportModel("models/knot.txt", new Object(texture3));
+				model.ImportModel("models/knot.txt", new Object(texture6, DOOR));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'd':
-				model.ImportModel("models/teapot.txt", new Object(texture1));
+				model.ImportModel("models/teapot.txt", new Object(texture6, KEY));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'E':
-				model.ImportModel("models/knot.txt", new Object(texture3));
+				model.ImportModel("models/knot.txt", new Object(texture7, DOOR));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case 'e':
-				model.ImportModel("models/teapot.txt", new Object(texture1));
+				model.ImportModel("models/teapot.txt", new Object(texture7, KEY));
+				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
 			case 'S':
@@ -357,20 +403,15 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 			}
 			
 		}
-		/*model.obj[1] = new Object(texture2);
-		model.ImportModel("models/cube.txt", 1);
-		model.obj[2] = new Object(texture3);
-		model.ImportModel("models/knot.txt", 2);
-		model.obj[3] = new Object(texture4);
-		model.ImportModel("models/sphere.txt", 3);*/
+		
 	}
 }
 void DrawMap(Model& model, const Camera& camera , const Map& savedmap)
 {
 	//glm::vec3 floorScale(float(savedmap.MapSize[1])*SKYBOX_WIDTH, float(savedmap.MapSize[0])*SKYBOX_HEIGHT, 0.1f);
 	glm::vec3 floorScale(SKYBOX_WIDTH, SKYBOX_HEIGHT, 0.1f);
-	glm::vec3 scale(SKYBOX_WIDTH, SKYBOX_HEIGHT, SKYBOX_LENGTH);
-	//model.DrawModel(0, camera, floorScale);
+	glm::vec3 scale(SKYBOX_WIDTH, SKYBOX_HEIGHT,SKYBOX_LENGTH);//
+	//floor
 	for (int i = 0; i < model.MaxmodelNum/2; ++i)
 	{
 		model.DrawModel(i, camera, floorScale);
@@ -378,7 +419,10 @@ void DrawMap(Model& model, const Camera& camera , const Map& savedmap)
 	}
 	for (int i = model.MaxmodelNum / 2; i < model.obj.size(); ++i)// 
 	{
-		model.DrawModel(i, camera, scale);
+		if (model.obj[i]->Isbind)
+			model.DrawModel(i, camera, scale / 2.0f);
+		else
+			model.DrawModel(i, camera, scale);
 		//model.DrawModel(model.obj.size()-1, camera, scale);
 	}
 }
@@ -395,8 +439,8 @@ void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& 
 	glm::vec4 m_direction(camera.viewDirection.x, camera.viewDirection.y, camera.viewDirection.z, 1.0f);
 	glm::vec4 m_up(camera.up.x, camera.up.y, camera.up.z, 1.0f);
 	glm::mat4 rot;
-	glm::vec3 pitchAxis = glm::cross(camera.viewDirection,camera.up);
-	float m_speed = 0.1;
+	glm::vec3 pitchAxis = glm::normalize(glm::cross(camera.viewDirection,camera.up));
+	float m_speed = 0.02*SKYBOX_WIDTH;
 	while (SDL_PollEvent(&windowEvent)) 
 	{  //inspect all events in the queue
 		switch (windowEvent.type)
@@ -458,16 +502,16 @@ void KeyCallback(SDL_Window* window, SDL_Event& windowEvent, bool& quit, Model& 
 				rot = glm::rotate(rot, 1.f * m_speed, glm::normalize(pitchAxis));
 				m_direction = rot * m_direction;
 				m_up = rot * m_up;
-				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
-				camera.up= glm::vec3(m_up.x, m_up.y, m_up.z);
+				camera.viewDirection = glm::normalize(glm::vec3(m_direction.x, m_direction.y, m_direction.z));
+				camera.up= glm::normalize(glm::vec3(m_up.x, m_up.y, m_up.z));
 				camera.target = camera.position + camera.viewDirection;
 				break;
 			case SDLK_s:
 				rot = glm::rotate(rot, -1.f * m_speed, glm::normalize(pitchAxis));
 				m_direction = rot * m_direction;
 				m_up = rot * m_up;
-				camera.viewDirection = glm::vec3(m_direction.x, m_direction.y, m_direction.z);
-				camera.up = glm::vec3(m_up.x, m_up.y, m_up.z);
+				camera.viewDirection = glm::normalize(glm::vec3(m_direction.x, m_direction.y, m_direction.z));
+				camera.up = glm::normalize(glm::vec3(m_up.x, m_up.y, m_up.z));
 				camera.target = camera.position + camera.viewDirection;
 				break;
 			default:
@@ -653,4 +697,31 @@ bool CheckCollisionCircleRec(glm::vec2 center, float radius, const Rect& rec)
 	if (dy <= ((float)rec.height / 2.0f)) { return true; }*/
 
 	//return (cornerDistanceSq <= (radius*radius));
+}
+
+void showWin(SDL_Window * window, SDL_Event& event)
+{
+	bool quit = false;
+	SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
+	SDL_Surface * image = SDL_LoadBMP("texture/win.bmp");
+	SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, image);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
+	while (!quit)
+	{
+		SDL_WaitEvent(&event);
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			quit = true;
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_q)
+				quit = true; //press q to exit event loop
+			break;
+		}
+	}
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(image);
+	SDL_DestroyRenderer(renderer);
 }

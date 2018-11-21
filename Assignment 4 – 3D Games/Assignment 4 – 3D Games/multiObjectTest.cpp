@@ -329,36 +329,36 @@ void drawGeometry(int shaderProgram, int model1_start, int model1_numVerts)//, i
 	model = glm::rotate(model,timePast * 3.14f/4,glm::vec3(1.0f, 0.0f, 0.0f));
 	//model = glm::scale(model,glm::vec3(.2f,.2f,.2f)); //An example of scale
 	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
-	//glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model)); //pass model matrix to shader
+	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model)); //pass model matrix to shader
 
-	////Set which texture to use (-1 = no texture)
-	//glUniform1i(uniTexID, -1); 
+	//Set which texture to use (-1 = no texture)
+	glUniform1i(uniTexID, -1); 
 
-	////Draw an instance of the model (at the position & orientation specified by the model matrix above)
-	//glDrawArrays(GL_TRIANGLES, model1_start, model1_numVerts); //(Primitive Type, Start Vertex, Num Verticies)
-	//
+	//Draw an instance of the model (at the position & orientation specified by the model matrix above)
+	glDrawArrays(GL_TRIANGLES, model1_start, model1_numVerts); //(Primitive Type, Start Vertex, Num Verticies)
 	
-	//************
-	//Draw model #1 the second time
-	//This model is stored in the VBO starting a offest model1_start and with model1_numVerts num. of verticies
-	//*************
+	
+	/*************
+	Draw model #1 the second time
+	This model is stored in the VBO starting a offest model1_start and with model1_numVerts num. of verticies
+	**************/
 
-	////Translate the model (matrix) left and back
-	//model = glm::mat4(); //Load intentity
-	//model = glm::translate(model,glm::vec3(-2,-1,-.4));
-	////model = glm::scale(model,2.f*glm::vec3(1.f,1.f,0.5f)); //scale example
-	//glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+	//Translate the model (matrix) left and back
+	model = glm::mat4(); //Load intentity
+	model = glm::translate(model,glm::vec3(-2,-1,-.4));
+	//model = glm::scale(model,2.f*glm::vec3(1.f,1.f,0.5f)); //scale example
+	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
-	////Set which texture to use (0 = wood texture ... bound to GL_TEXTURE0)
-	//glUniform1i(uniTexID, 0);
+	//Set which texture to use (0 = wood texture ... bound to GL_TEXTURE0)
+	glUniform1i(uniTexID, 0);
 
- // //Draw an instance of the model (at the position & orientation specified by the model matrix above)
-	//glDrawArrays(GL_TRIANGLES, model1_start, model1_numVerts); //(Primitive Type, Start Vertex, Num Verticies)
+  //Draw an instance of the model (at the position & orientation specified by the model matrix above)
+	glDrawArrays(GL_TRIANGLES, model1_start, model1_numVerts); //(Primitive Type, Start Vertex, Num Verticies)
 		
-	//************
-	//Draw model #2 once
-	//This model is stored in the VBO starting a offest model2_start and with model2_numVerts num of verticies
-	//*************
+	/*************
+	Draw model #2 once
+	This model is stored in the VBO starting a offest model2_start and with model2_numVerts num of verticies
+	**************/
 
 	//Translate the model (matrix) based on where objx/y/z is
 	// ... these variables are set when the user presses the arrow keys

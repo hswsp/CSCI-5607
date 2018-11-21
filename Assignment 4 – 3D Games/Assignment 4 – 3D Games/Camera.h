@@ -16,9 +16,10 @@ struct Camera
 	glm::vec3 up;             // Camera up vector (rotation over its axis)
 	float fovy;             // Camera field-of-view apperture in Y (degrees)
 	glm::vec2 oldMousePosition;
+	char key;
 	Camera() {};
 	Camera(glm::vec3 Aposition, glm::vec3 Atarget, glm::vec3 Aup, float Afovy) :
-		position(Aposition), target(Atarget), up(Aup), fovy(Afovy), viewDirection(Atarget- Aposition)
+		position(Aposition), target(Atarget), up(glm::normalize(Aup)), fovy(Afovy), viewDirection(glm::normalize(Atarget- Aposition))
 	{}
 	glm::mat4 getWorldToViewMatrix() const;
 	void mouseUpdate(const glm::vec2& newMousePosition);
