@@ -288,7 +288,7 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 	float walloffset= 0.5;//SKYBOX_HEIGHT
 	float gate0ffset= 0.36;//SKYBOX_HEIGHT
 	float exitoffset = 0.5;
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < 7; ++i)
 	{
 		text[i] = i;
 		shaderUnit[i] = i;
@@ -350,7 +350,7 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'a':
-				model.ImportModel("models/teapot.txt", new Object(texture1,KEY));
+				model.ImportModel("models/teapot.txt", new Object(texture7,KEY));
 				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;
