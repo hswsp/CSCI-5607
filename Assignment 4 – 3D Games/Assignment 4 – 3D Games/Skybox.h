@@ -41,14 +41,21 @@ class SkyboxTechnique
 public:
 	GLuint m_shaderProg;
 	void Enable();
+	void Disable();
 	SkyboxTechnique();
     bool Init();
-	void SetWVP(const glm::mat4& WVP);
+	//void SetWVP(const glm::mat4& WVP);
+	void SetModel(const glm::mat4& WVP);
+	void SetView(const glm::mat4& WVP);
+	void SetProj(const glm::mat4& WVP);
 	void SetTextureUnit(unsigned int TextureUnit);
-	GLuint ShaderObj;
+	//GLuint ShaderObj;
 private:
 	Shader SkyboxShader;
-	GLuint m_WVPLocation;
+	//GLuint m_WVPLocation;
+	GLuint m_ModelPLocation;
+	GLuint m_ViewLocation;
+	GLuint m_ProjLocation;
 	GLuint m_textureLocation;
 	GLuint m_PositionLocation;
 };
@@ -71,7 +78,7 @@ public:
 	~SkyBox()
 	{
 	//	delete m_pSkyboxTechnique;
-	//	delete m_pCamera;
+	//	delete m_pCamera;  
 	//	delete m_pCubemapTex;
 	}
 private:

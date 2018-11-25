@@ -261,8 +261,9 @@ int main(int argc, char *argv[])
 		model.LoadModel(matModelview, matProjection);
 		//----------------------------------------------------------------------------------
 		// Draw
-		skybox.Render(camera, matProjection);
 		DrawMap(model, camera, savedmap);
+		//skybox.Render(camera, matProjection);
+		//glDeleteProgram(texturedShader);
 		if (savedmap.SavedMap[(int)playerPos.x][(int)playerPos.y] == 'G')
 		{
 			showWin(window, gameExit);
