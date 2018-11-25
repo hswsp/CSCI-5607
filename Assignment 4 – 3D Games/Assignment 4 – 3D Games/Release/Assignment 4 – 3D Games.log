@@ -12,9 +12,11 @@
   GLM: angle function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: angleAxis function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   Games.cpp
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(289): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(420): warning C4018: '<': signed/unsigned mismatch
-d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(443): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\skybox.h(30): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\skybox.h(30): warning C4154: deletion of an array expression; conversion to pointer supplied
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(298): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(429): warning C4018: '<': signed/unsigned mismatch
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\games.cpp(452): warning C4305: 'initializing': truncation from 'double' to 'float'
   Light.cpp
   GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: rotate_slow function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
@@ -58,6 +60,8 @@ d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d gam
   GLM: yaw function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: angle function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
   GLM: angleAxis function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\skybox.h(30): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
+d:\github_repository\csci-5607\assignment 4 – 3d games\assignment 4 – 3d games\skybox.h(30): warning C4154: deletion of an array expression; conversion to pointer supplied
   Texture.cpp
   shader.cpp
   glad.c

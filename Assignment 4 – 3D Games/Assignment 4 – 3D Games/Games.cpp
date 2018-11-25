@@ -30,6 +30,7 @@ const char* INSTRUCTIONS =
 #include"Camera.h"
 #include"Map.h"
 #include"Light.h"
+#include"Skybox.h"
 #include <stdarg.h>             // Required for TraceLog()
 #include <cstdio>
 #include <iostream>
@@ -152,14 +153,21 @@ int main(int argc, char *argv[])
 	GLuint vao = 0;
 	GLuint vbo[3] = { 0 };
 	model.UploadMeshData(vao, vbo);
-
-	/*Model teapot(1);
-	teapot.texture[0]=new Texture2D(texture1);
-	teapot.LoadModel("models/teapot.txt",0);
-	teapot.texturedShader = texturedShader;
-	GLuint teapotvao = 0;
-	GLuint teapotvbo[3] = { 0 };
-	teapot.UploadMeshData(teapotvao, teapotvbo);*/
+	/*------------------------------------------------------*/
+	const string f = "texture/front.bmp";
+	const string b = "texture/back.bmp";
+	const string r = "texture/right.bmp";
+	const string l = "texture/left.bmp";
+	const string u = "texture/up.bmp";
+	const string d = "texture/down.bmp";
+	SkyBox skybox;
+	if (!skybox.Init(f, b, r, f, u, d))
+	{
+		printf("Load skybox error!\n");
+	};
+	GLuint vao1 = 0;
+	GLuint vbo1[1] = { 0 };
+	skybox.UpdateData("models/cube.txt", vao1, vbo1);
 	SetTargetFPS(60);
 	//--------------------------------------------------------------------------------------    
 	/*glm::vec3 floorPosition(float(savedmap.MapSize[0]) / 2.0 + 1, float(savedmap.MapSize[1]) / 2.0 + 1, -0.1f);
@@ -253,6 +261,7 @@ int main(int argc, char *argv[])
 		model.LoadModel(matModelview, matProjection);
 		//----------------------------------------------------------------------------------
 		// Draw
+		skybox.Render(camera, matProjection);
 		DrawMap(model, camera, savedmap);
 		if (savedmap.SavedMap[(int)playerPos.x][(int)playerPos.y] == 'G')
 		{
@@ -281,8 +290,8 @@ int main(int argc, char *argv[])
 
 void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 {
-	int text[4];//id
-	GLuint shaderUnit[4]; //which textshader
+	int text[7];//id
+	GLuint shaderUnit[7]; //which textshader
 	int modelNum = savedmap.MapSize[0] * savedmap.MapSize[1];
 	float keyoffset= 0.25;//SKYBOX_HEIGHT
 	float walloffset= 0.5;//SKYBOX_HEIGHT
@@ -350,7 +359,7 @@ void LoadMap(const Map& savedmap, Model& model, Camera& camera)
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), gate0ffset));
 				break;
 			case'a':
-				model.ImportModel("models/teapot.txt", new Object(texture7,KEY));
+				model.ImportModel("models/teapot.txt", new Object(texture1,KEY));
 				savedmap.mapObj[i][j] = k++;
 				(*(++it))->UploadPosition(glm::vec3((float(i) + 0.5), (float(j) + 0.5), keyoffset));
 				break;

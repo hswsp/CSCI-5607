@@ -3,14 +3,15 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include"shader.h"
+#include"Camera.h"
+#include"Model.h"
 #include <SDL_opengl.h>
 #include <SDL.h>
 #include <fstream>
 #include<iostream>
 #include<vector>
 #include <list>
-#include"shader.h"
-#include"Camera.h"
 using namespace std;
 class CubemapTexture
 {
@@ -22,10 +23,14 @@ public:
 		const string& NegYFilename,
 		const string& PosZFilename,
 		const string& NegZFilename);
-	~CubemapTexture();
 	bool Load();
 	void Bind(GLenum TextureUnit);
-
+	~CubemapTexture()
+	{
+		delete[] m_fileNames;
+	}
+	/*void SetWVP(const Camera& camera, glm::mat4 model);
+	void SetPositoin(const Camera& camera, glm::vec3 model);*/
 private:
 	string m_fileNames[6];
 	GLuint m_textureObj;
@@ -45,27 +50,35 @@ private:
 	Shader SkyboxShader;
 	GLuint m_WVPLocation;
 	GLuint m_textureLocation;
+	GLuint m_PositionLocation;
 };
 
 class SkyBox
 {
 public:
 //	SkyBox(const Camera* pCamera, const PersProjInfo& p);
-
-	~SkyBox();
-
-	bool Init(const string& Directory,
+	GLuint vaoId;     // OpenGL Vertex Array Object id
+	GLuint vboId[1];  // OpenGL Vertex Buffer Objects id (3 types of vertex data supported)
+	bool Init(
 		const string& PosXFilename,
 		const string& NegXFilename,
 		const string& PosYFilename,
 		const string& NegYFilename,
 		const string& PosZFilename,
 		const string& NegZFilename);
-	void Render();
+	void UpdateData(const char* modelpath, GLuint& vao, GLuint vbo[1]);
+	void Render(const Camera& camera, glm::mat4 proj);
+	~SkyBox()
+	{
+	//	delete m_pSkyboxTechnique;
+	//	delete m_pCamera;
+	//	delete m_pCubemapTex;
+	}
 private:
 	SkyboxTechnique* m_pSkyboxTechnique;
-	const Camera* m_pCamera;
+	//const Camera* m_pCamera;
 	CubemapTexture* m_pCubemapTex;
-	//Mesh* m_pMesh;
+	int totalNumVerts;
+	float *vertices;
 	//PersProjInfo m_persProjInfo;
 };

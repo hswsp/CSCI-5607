@@ -107,7 +107,7 @@ void Model::ImportModel(const char* modelpath, Object* objects)//int k
 	}
 	//printf("%d\n", numLines);
 	objects->vertexCount = numLines / 8;//this->obj[k]
-	this->totalNumVerts+= numLines / 8;
+	this->totalNumVerts += numLines / 8;
 	modelFile.close();
 	this->obj.push_back(objects);
 	//this->MaxmodelNum++;
